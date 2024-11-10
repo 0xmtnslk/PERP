@@ -32,12 +32,12 @@ pip install websocket-client
 ```
 
 # 4.PERP klasörü içinde secret.json dosya içinde API bilgilerinizi değiştirin
-
+```
 api_key = ""
 secret_key = ""
 passphrase = ""
 initial_symbol = ""
-
+```
 
 ## Çalıştırma
 
@@ -49,12 +49,19 @@ screen -S API_tara
 ```
 python3 /root/PERP/upbit_market_tracker.py
 ```
-// Bir screen içinde "bitget_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız
+// Bir screen içinde "bitget_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
+
 ```
-screen -S bitget_islem
+screen -S API_bitget
 ```
 ```
-python3 bitget_perp_order.py
+python3 /root/bitget_perp_order.py
+```
+
+//  Acil durumlarda işlem durdurmak için CTRL+C ile  bitget_perp_order.py durdurup aşağıdaki komudu girin.
+
+```
+python3 /root/kapat.py
 ```
 
 // Her 2 dosya sürekli çalışır durumda olacak screen içinde.
