@@ -39,9 +39,9 @@ passphrase = ""
 initial_symbol = ""
 ```
 
-## Çalıştırma
+# Çalıştırma
 
-// Bir screen içinde "/root/PERP/upbit_market_tracker.py" çalıştırıyoruz sürekli upbit yeni coin taraması yapacak
+## Bir screen içinde "/root/PERP/upbit_market_tracker.py" çalıştırıyoruz sürekli upbit yeni coin taraması yapacak
 
 ```
 screen -S API_tara
@@ -49,7 +49,7 @@ screen -S API_tara
 ```
 python3 /root/PERP/upbit_market_tracker.py
 ```
-// Bir screen içinde "bitget_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
+## Bir screen içinde "bitget_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
 
 ```
 screen -S API_bitget
@@ -58,7 +58,7 @@ screen -S API_bitget
 python3 /root/bitget_perp_order.py
 ```
 
-//  Acil durumlarda işlem durdurmak için CTRL+C ile  bitget_perp_order.py durdurup aşağıdaki komudu girin.
+##  Acil durumlarda işlem durdurmak için CTRL+C ile  bitget_perp_order.py durdurup aşağıdaki komudu girin.
 
 ```
 python3 /root/kapat.py
