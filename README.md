@@ -64,4 +64,13 @@ python3 /root/bitget_perp_order.py
 python3 /root/kapat.py
 ```
 
-## Her 2 dosya sürekli çalışır durumda olacak screen içinde.
+## Telegram bot için veri aktarmak istediğimiz için Bir screen içinde "telegram_degisken.py" çalıştırıyoruz bu txt uzantılı dosyamızın aynısını json olarak yazar.
+
+```
+screen -S API_Telegram_json
+```
+```
+python3 /root/telegram_degisken.py
+```
+
+## Her 3 dosya sürekli çalışır durumda olacak screen içinde çalışacak.
