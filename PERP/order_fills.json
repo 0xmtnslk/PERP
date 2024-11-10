@@ -1,0 +1,23 @@
+{
+    "code": "00000",
+    "msg": "success",
+    "requestTime": 1731233871632,
+    "data": [
+        {
+            "tradeId": "1239450179032215557",
+            "symbol": "DYMUSDT_UMCBL",
+            "orderId": "1239450178113118211",
+            "price": "1.725",
+            "sizeQty": "8.7",
+            "fee": "-0.0090045",
+            "side": "open_long",
+            "fillAmount": "15.0075",
+            "profit": "0",
+            "enterPointSource": "API",
+            "tradeSide": "open_long",
+            "holdMode": "double_hold",
+            "takerMakerFlag": "taker",
+            "cTime": "1731233871229"
+        }
+    ]
+}
