@@ -1,0 +1,1942 @@
+[
+    {
+        "market": "KRW-BTC",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸",
+        "english_name": "Bitcoin"
+    },
+    {
+        "market": "KRW-ETH",
+        "korean_name": "ì´ë”ë¦¬ì›€",
+        "english_name": "Ethereum"
+    },
+    {
+        "market": "BTC-ETH",
+        "korean_name": "ì´ë”ë¦¬ì›€",
+        "english_name": "Ethereum"
+    },
+    {
+        "market": "BTC-XRP",
+        "korean_name": "ë¦¬í”Œ",
+        "english_name": "Ripple"
+    },
+    {
+        "market": "BTC-ETC",
+        "korean_name": "ì´ë”ë¦¬ì›€í´ë˜ì‹",
+        "english_name": "Ethereum Classic"
+    },
+    {
+        "market": "BTC-CVC",
+        "korean_name": "ì‹œë¹…",
+        "english_name": "Civic"
+    },
+    {
+        "market": "BTC-DGB",
+        "korean_name": "ë””ì§€ë°”ì´íŠ¸",
+        "english_name": "DigiByte"
+    },
+    {
+        "market": "BTC-SC",
+        "korean_name": "ì‹œì•„ì½”ì¸",
+        "english_name": "Siacoin"
+    },
+    {
+        "market": "BTC-SNT",
+        "korean_name": "ìŠ¤í…Œì´í„°ìŠ¤ë„¤íŠ¸ì›Œí¬í† í°",
+        "english_name": "Status Network Token"
+    },
+    {
+        "market": "BTC-WAVES",
+        "korean_name": "ì›¨ì´ë¸Œ",
+        "english_name": "Waves"
+    },
+    {
+        "market": "BTC-NMR",
+        "korean_name": "ë‰´ë©”ë ˆë¥´",
+        "english_name": "Numeraire"
+    },
+    {
+        "market": "BTC-XEM",
+        "korean_name": "ë„´",
+        "english_name": "NEM"
+    },
+    {
+        "market": "BTC-QTUM",
+        "korean_name": "í€€í…€",
+        "english_name": "Qtum"
+    },
+    {
+        "market": "BTC-BAT",
+        "korean_name": "ë² ì´ì§ì–´í…ì…˜í† í°",
+        "english_name": "Basic Attention Token"
+    },
+    {
+        "market": "BTC-LSK",
+        "korean_name": "ë¦¬ìŠ¤í¬",
+        "english_name": "Lisk"
+    },
+    {
+        "market": "BTC-STEEM",
+        "korean_name": "ìŠ¤íŒ€",
+        "english_name": "Steem"
+    },
+    {
+        "market": "BTC-DOGE",
+        "korean_name": "ë„ì§€ì½”ì¸",
+        "english_name": "Dogecoin"
+    },
+    {
+        "market": "BTC-BNT",
+        "korean_name": "ë±…ì½”ë¥´",
+        "english_name": "Bancor"
+    },
+    {
+        "market": "BTC-XLM",
+        "korean_name": "ìŠ¤í…”ë¼ë£¨ë©˜",
+        "english_name": "Lumen"
+    },
+    {
+        "market": "BTC-ARDR",
+        "korean_name": "ì•„ë”",
+        "english_name": "Ardor"
+    },
+    {
+        "market": "BTC-ARK",
+        "korean_name": "ì•„í¬",
+        "english_name": "Ark"
+    },
+    {
+        "market": "BTC-STORJ",
+        "korean_name": "ìŠ¤í† ë¦¬ì§€",
+        "english_name": "Storj"
+    },
+    {
+        "market": "BTC-GRS",
+        "korean_name": "ê·¸ë¡œìŠ¤í†¨ì½”ì¸",
+        "english_name": "Groestlcoin"
+    },
+    {
+        "market": "BTC-RLC",
+        "korean_name": "ì•„ì´ì ",
+        "english_name": "iEx.ec"
+    },
+    {
+        "market": "USDT-BTC",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸",
+        "english_name": "Bitcoin"
+    },
+    {
+        "market": "USDT-ETH",
+        "korean_name": "ì´ë”ë¦¬ì›€",
+        "english_name": "Ethereum"
+    },
+    {
+        "market": "USDT-XRP",
+        "korean_name": "ë¦¬í”Œ",
+        "english_name": "Ripple"
+    },
+    {
+        "market": "USDT-ETC",
+        "korean_name": "ì´ë”ë¦¬ì›€í´ë˜ì‹",
+        "english_name": "Ethereum Classic"
+    },
+    {
+        "market": "KRW-NEO",
+        "korean_name": "ë„¤ì˜¤",
+        "english_name": "NEO"
+    },
+    {
+        "market": "KRW-MTL",
+        "korean_name": "ë©”íƒˆ",
+        "english_name": "Metal"
+    },
+    {
+        "market": "KRW-XRP",
+        "korean_name": "ë¦¬í”Œ",
+        "english_name": "Ripple"
+    },
+    {
+        "market": "KRW-ETC",
+        "korean_name": "ì´ë”ë¦¬ì›€í´ë˜ì‹",
+        "english_name": "Ethereum Classic"
+    },
+    {
+        "market": "KRW-SNT",
+        "korean_name": "ìŠ¤í…Œì´í„°ìŠ¤ë„¤íŠ¸ì›Œí¬í† í°",
+        "english_name": "Status Network Token"
+    },
+    {
+        "market": "KRW-WAVES",
+        "korean_name": "ì›¨ì´ë¸Œ",
+        "english_name": "Waves"
+    },
+    {
+        "market": "KRW-XEM",
+        "korean_name": "ë„´",
+        "english_name": "NEM"
+    },
+    {
+        "market": "KRW-QTUM",
+        "korean_name": "í€€í…€",
+        "english_name": "Qtum"
+    },
+    {
+        "market": "KRW-LSK",
+        "korean_name": "ë¦¬ìŠ¤í¬",
+        "english_name": "Lisk"
+    },
+    {
+        "market": "KRW-STEEM",
+        "korean_name": "ìŠ¤íŒ€",
+        "english_name": "Steem"
+    },
+    {
+        "market": "KRW-XLM",
+        "korean_name": "ìŠ¤í…”ë¼ë£¨ë©˜",
+        "english_name": "Lumen"
+    },
+    {
+        "market": "KRW-ARDR",
+        "korean_name": "ì•„ë”",
+        "english_name": "Ardor"
+    },
+    {
+        "market": "KRW-ARK",
+        "korean_name": "ì•„í¬",
+        "english_name": "Ark"
+    },
+    {
+        "market": "KRW-STORJ",
+        "korean_name": "ìŠ¤í† ë¦¬ì§€",
+        "english_name": "Storj"
+    },
+    {
+        "market": "KRW-GRS",
+        "korean_name": "ê·¸ë¡œìŠ¤í†¨ì½”ì¸",
+        "english_name": "Groestlcoin"
+    },
+    {
+        "market": "KRW-ADA",
+        "korean_name": "ì—ì´ë‹¤",
+        "english_name": "Ada"
+    },
+    {
+        "market": "BTC-ADA",
+        "korean_name": "ì—ì´ë‹¤",
+        "english_name": "Ada"
+    },
+    {
+        "market": "BTC-MANA",
+        "korean_name": "ë””ì„¼íŠ¸ëŸ´ëœë“œ",
+        "english_name": "Decentraland"
+    },
+    {
+        "market": "KRW-SBD",
+        "korean_name": "ìŠ¤íŒ€ë‹¬ëŸ¬",
+        "english_name": "SteemDollars"
+    },
+    {
+        "market": "BTC-SBD",
+        "korean_name": "ìŠ¤íŒ€ë‹¬ëŸ¬",
+        "english_name": "SteemDollars"
+    },
+    {
+        "market": "KRW-POWR",
+        "korean_name": "íŒŒì›Œë ›ì €",
+        "english_name": "Power ledger"
+    },
+    {
+        "market": "BTC-POWR",
+        "korean_name": "íŒŒì›Œë ›ì €",
+        "english_name": "Power ledger"
+    },
+    {
+        "market": "KRW-BTG",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸ê³¨ë“œ",
+        "english_name": "Bitcoin Gold"
+    },
+    {
+        "market": "USDT-ADA",
+        "korean_name": "ì—ì´ë‹¤",
+        "english_name": "Ada"
+    },
+    {
+        "market": "BTC-DNT",
+        "korean_name": "ë””ìŠ¤íŠ¸ë¦­íŠ¸0x",
+        "english_name": "district0x"
+    },
+    {
+        "market": "BTC-ZRX",
+        "korean_name": "ì œë¡œì—‘ìŠ¤",
+        "english_name": "0x Protocol"
+    },
+    {
+        "market": "BTC-TRX",
+        "korean_name": "íŠ¸ë¡ ",
+        "english_name": "TRON"
+    },
+    {
+        "market": "BTC-TUSD",
+        "korean_name": "íŠ¸ë£¨USD",
+        "english_name": "TrueUSD"
+    },
+    {
+        "market": "BTC-LRC",
+        "korean_name": "ë£¨í”„ë§",
+        "english_name": "Loopring"
+    },
+    {
+        "market": "KRW-ICX",
+        "korean_name": "ì•„ì´ì½˜",
+        "english_name": "Icon"
+    },
+    {
+        "market": "KRW-EOS",
+        "korean_name": "ì´ì˜¤ìŠ¤",
+        "english_name": "EOS"
+    },
+    {
+        "market": "USDT-TUSD",
+        "korean_name": "íŠ¸ë£¨USD",
+        "english_name": "TrueUSD"
+    },
+    {
+        "market": "KRW-TRX",
+        "korean_name": "íŠ¸ë¡ ",
+        "english_name": "TRON"
+    },
+    {
+        "market": "BTC-POLYX",
+        "korean_name": "í´ë¦¬ë§¤ì‰¬",
+        "english_name": "Polymesh"
+    },
+    {
+        "market": "USDT-SC",
+        "korean_name": "ì‹œì•„ì½”ì¸",
+        "english_name": "Siacoin"
+    },
+    {
+        "market": "USDT-TRX",
+        "korean_name": "íŠ¸ë¡ ",
+        "english_name": "TRON"
+    },
+    {
+        "market": "KRW-SC",
+        "korean_name": "ì‹œì•„ì½”ì¸",
+        "english_name": "Siacoin"
+    },
+    {
+        "market": "KRW-ONT",
+        "korean_name": "ì˜¨í†¨ë¡œì§€",
+        "english_name": "Ontology"
+    },
+    {
+        "market": "KRW-ZIL",
+        "korean_name": "ì§ˆë¦¬ì¹´",
+        "english_name": "Zilliqa"
+    },
+    {
+        "market": "KRW-POLYX",
+        "korean_name": "í´ë¦¬ë§¤ì‰¬",
+        "english_name": "Polymesh"
+    },
+    {
+        "market": "KRW-ZRX",
+        "korean_name": "ì œë¡œì—‘ìŠ¤",
+        "english_name": "0x Protocol"
+    },
+    {
+        "market": "KRW-LOOM",
+        "korean_name": "ë£¸ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Loom Network"
+    },
+    {
+        "market": "BTC-BCH",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸ìºì‹œ",
+        "english_name": "Bitcoin Cash"
+    },
+    {
+        "market": "USDT-BCH",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸ìºì‹œ",
+        "english_name": "Bitcoin Cash"
+    },
+    {
+        "market": "KRW-BCH",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸ìºì‹œ",
+        "english_name": "Bitcoin Cash"
+    },
+    {
+        "market": "BTC-HIFI",
+        "korean_name": "í•˜ì´íŒŒì´",
+        "english_name": "Hifi Finance"
+    },
+    {
+        "market": "BTC-LOOM",
+        "korean_name": "ë£¸ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Loom Network"
+    },
+    {
+        "market": "KRW-BAT",
+        "korean_name": "ë² ì´ì§ì–´í…ì…˜í† í°",
+        "english_name": "Basic Attention Token"
+    },
+    {
+        "market": "KRW-IOST",
+        "korean_name": "ì•„ì´ì˜¤ì—ìŠ¤í‹°",
+        "english_name": "IOST"
+    },
+    {
+        "market": "USDT-DGB",
+        "korean_name": "ë””ì§€ë°”ì´íŠ¸",
+        "english_name": "DigiByte"
+    },
+    {
+        "market": "KRW-CVC",
+        "korean_name": "ì‹œë¹…",
+        "english_name": "Civic"
+    },
+    {
+        "market": "KRW-IQ",
+        "korean_name": "ì•„ì´í",
+        "english_name": "IQ.wiki"
+    },
+    {
+        "market": "KRW-IOTA",
+        "korean_name": "ì•„ì´ì˜¤íƒ€",
+        "english_name": "IOTA"
+    },
+    {
+        "market": "BTC-RVN",
+        "korean_name": "ë ˆì´ë¸ì½”ì¸",
+        "english_name": "Ravencoin"
+    },
+    {
+        "market": "BTC-GO",
+        "korean_name": "ê³ ì²´ì¸",
+        "english_name": "GoChain"
+    },
+    {
+        "market": "BTC-BOUNTY",
+        "korean_name": "ì²´ì¸ë°”ìš´í‹°",
+        "english_name": "Chainbounty"
+    },
+    {
+        "market": "BTC-ENJ",
+        "korean_name": "ì—”ì§„ì½”ì¸",
+        "english_name": "Enjin"
+    },
+    {
+        "market": "KRW-HIFI",
+        "korean_name": "í•˜ì´íŒŒì´",
+        "english_name": "Hifi Finance"
+    },
+    {
+        "market": "KRW-ONG",
+        "korean_name": "ì˜¨í†¨ë¡œì§€ê°€ìŠ¤",
+        "english_name": "ONG"
+    },
+    {
+        "market": "KRW-GAS",
+        "korean_name": "ê°€ìŠ¤",
+        "english_name": "GAS"
+    },
+    {
+        "market": "BTC-MTL",
+        "korean_name": "ë©”íƒˆ",
+        "english_name": "Metal"
+    },
+    {
+        "market": "KRW-BOUNTY",
+        "korean_name": "ì²´ì¸ë°”ìš´í‹°",
+        "english_name": "Chainbounty"
+    },
+    {
+        "market": "KRW-ELF",
+        "korean_name": "ì—˜í”„",
+        "english_name": "aelf"
+    },
+    {
+        "market": "USDT-DOGE",
+        "korean_name": "ë„ì§€ì½”ì¸",
+        "english_name": "Dogecoin"
+    },
+    {
+        "market": "USDT-ZRX",
+        "korean_name": "ì œë¡œì—‘ìŠ¤",
+        "english_name": "0x Protocol"
+    },
+    {
+        "market": "USDT-RVN",
+        "korean_name": "ë ˆì´ë¸ì½”ì¸",
+        "english_name": "Ravencoin"
+    },
+    {
+        "market": "USDT-BAT",
+        "korean_name": "ë² ì´ì§ì–´í…ì…˜í† í°",
+        "english_name": "Basic Attention Token"
+    },
+    {
+        "market": "KRW-KNC",
+        "korean_name": "ì¹´ì´ë²„ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Kyber Network"
+    },
+    {
+        "market": "BTC-MOC",
+        "korean_name": "ëª¨ìŠ¤ì½”ì¸",
+        "english_name": "Moss Coin"
+    },
+    {
+        "market": "BTC-ZIL",
+        "korean_name": "ì§ˆë¦¬ì¹´",
+        "english_name": "Zilliqa"
+    },
+    {
+        "market": "KRW-BSV",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸ì—ìŠ¤ë¸Œì´",
+        "english_name": "Bitcoin SV"
+    },
+    {
+        "market": "BTC-BSV",
+        "korean_name": "ë¹„íŠ¸ì½”ì¸ì—ìŠ¤ë¸Œì´",
+        "english_name": "Bitcoin SV"
+    },
+    {
+        "market": "BTC-IOST",
+        "korean_name": "ì•„ì´ì˜¤ì—ìŠ¤í‹°",
+        "english_name": "IOST"
+    },
+    {
+        "market": "KRW-THETA",
+        "korean_name": "ì„íƒ€í† í°",
+        "english_name": "Theta Token"
+    },
+    {
+        "market": "BTC-DENT",
+        "korean_name": "ë´íŠ¸",
+        "english_name": "Dent"
+    },
+    {
+        "market": "KRW-QKC",
+        "korean_name": "ì¿¼í¬ì²´ì¸",
+        "english_name": "QuarkChain"
+    },
+    {
+        "market": "BTC-ELF",
+        "korean_name": "ì—˜í”„",
+        "english_name": "aelf"
+    },
+    {
+        "market": "KRW-BTT",
+        "korean_name": "ë¹„íŠ¸í† ë ŒíŠ¸",
+        "english_name": "BitTorrent"
+    },
+    {
+        "market": "BTC-IOTX",
+        "korean_name": "ì•„ì´ì˜¤í…ìŠ¤",
+        "english_name": "IoTeX"
+    },
+    {
+        "market": "BTC-SOLVE",
+        "korean_name": "ì†”ë¸Œì¼€ì–´",
+        "english_name": "Solve.Care"
+    },
+    {
+        "market": "BTC-NKN",
+        "korean_name": "ì—”ì¼€ì´ì—”",
+        "english_name": "NKN"
+    },
+    {
+        "market": "BTC-META",
+        "korean_name": "ë©”íƒ€ë””ì›€",
+        "english_name": "Metadium"
+    },
+    {
+        "market": "KRW-MOC",
+        "korean_name": "ëª¨ìŠ¤ì½”ì¸",
+        "english_name": "Moss Coin"
+    },
+    {
+        "market": "BTC-ANKR",
+        "korean_name": "ì•µì»¤",
+        "english_name": "Ankr"
+    },
+    {
+        "market": "BTC-CRO",
+        "korean_name": "í¬ë¡œë…¸ìŠ¤",
+        "english_name": "Cronos"
+    },
+    {
+        "market": "KRW-TFUEL",
+        "korean_name": "ì„íƒ€í“¨ì—˜",
+        "english_name": "Theta Fuel"
+    },
+    {
+        "market": "KRW-MANA",
+        "korean_name": "ë””ì„¼íŠ¸ëŸ´ëœë“œ",
+        "english_name": "Decentraland"
+    },
+    {
+        "market": "KRW-ANKR",
+        "korean_name": "ì•µì»¤",
+        "english_name": "Ankr"
+    },
+    {
+        "market": "BTC-ORBS",
+        "korean_name": "ì˜¤ë¸ŒìŠ¤",
+        "english_name": "Orbs"
+    },
+    {
+        "market": "BTC-AERGO",
+        "korean_name": "ì•„ë¥´ê³ ",
+        "english_name": "Aergo"
+    },
+    {
+        "market": "KRW-AERGO",
+        "korean_name": "ì•„ë¥´ê³ ",
+        "english_name": "Aergo"
+    },
+    {
+        "market": "KRW-ATOM",
+        "korean_name": "ì½”ìŠ¤ëª¨ìŠ¤",
+        "english_name": "Cosmos"
+    },
+    {
+        "market": "KRW-TT",
+        "korean_name": "ì¬ë”ì½”ì–´",
+        "english_name": "ThunderCore"
+    },
+    {
+        "market": "KRW-GAME2",
+        "korean_name": "ê²Œì„ë¹Œë“œ",
+        "english_name": "GameBuild"
+    },
+    {
+        "market": "BTC-ATOM",
+        "korean_name": "ì½”ìŠ¤ëª¨ìŠ¤",
+        "english_name": "Cosmos"
+    },
+    {
+        "market": "BTC-STPT",
+        "korean_name": "ì—ìŠ¤í‹°í”¼",
+        "english_name": "Standard Tokenization Protocol"
+    },
+    {
+        "market": "KRW-MBL",
+        "korean_name": "ë¬´ë¹„ë¸”ë¡",
+        "english_name": "MovieBloc"
+    },
+    {
+        "market": "BTC-EOS",
+        "korean_name": "ì´ì˜¤ìŠ¤",
+        "english_name": "EOS"
+    },
+    {
+        "market": "BTC-USDS",
+        "korean_name": "ìœ ì—ìŠ¤ë””ì—ìŠ¤",
+        "english_name": "USDS"
+    },
+    {
+        "market": "BTC-SKY",
+        "korean_name": "ìŠ¤ì¹´ì´í”„ë¡œí† ì½œ",
+        "english_name": "Sky Protocol"
+    },
+    {
+        "market": "BTC-BORA",
+        "korean_name": "ë³´ë¼",
+        "english_name": "BORA"
+    },
+    {
+        "market": "KRW-WAXP",
+        "korean_name": "ì™ìŠ¤",
+        "english_name": "WAX"
+    },
+    {
+        "market": "BTC-WAXP",
+        "korean_name": "ì™ìŠ¤",
+        "english_name": "WAX"
+    },
+    {
+        "market": "KRW-HBAR",
+        "korean_name": "í—¤ë°ë¼",
+        "english_name": "Hedera"
+    },
+    {
+        "market": "KRW-MED",
+        "korean_name": "ë©”ë””ë¸”ë¡",
+        "english_name": "MediBloc"
+    },
+    {
+        "market": "BTC-MED",
+        "korean_name": "ë©”ë””ë¸”ë¡",
+        "english_name": "MediBloc"
+    },
+    {
+        "market": "BTC-MLK",
+        "korean_name": "ë°€í¬",
+        "english_name": "MiL.k"
+    },
+    {
+        "market": "KRW-MLK",
+        "korean_name": "ë°€í¬",
+        "english_name": "MiL.k"
+    },
+    {
+        "market": "KRW-STPT",
+        "korean_name": "ì—ìŠ¤í‹°í”¼",
+        "english_name": "Standard Tokenization Protocol"
+    },
+    {
+        "market": "BTC-VET",
+        "korean_name": "ë¹„ì²´ì¸",
+        "english_name": "VeChain"
+    },
+    {
+        "market": "KRW-ORBS",
+        "korean_name": "ì˜¤ë¸ŒìŠ¤",
+        "english_name": "Orbs"
+    },
+    {
+        "market": "BTC-CHZ",
+        "korean_name": "ì¹ ë¦¬ì¦ˆ",
+        "english_name": "Chiliz"
+    },
+    {
+        "market": "KRW-VET",
+        "korean_name": "ë¹„ì²´ì¸",
+        "english_name": "VeChain"
+    },
+    {
+        "market": "BTC-FX",
+        "korean_name": "í‘ì…˜ì—‘ìŠ¤",
+        "english_name": "Function X"
+    },
+    {
+        "market": "BTC-OGN",
+        "korean_name": "ì˜¤ë¦¬ì§„í”„ë¡œí† ì½œ",
+        "english_name": "Origin Protocol"
+    },
+    {
+        "market": "KRW-CHZ",
+        "korean_name": "ì¹ ë¦¬ì¦ˆ",
+        "english_name": "Chiliz"
+    },
+    {
+        "market": "BTC-XTZ",
+        "korean_name": "í…Œì¡°ìŠ¤",
+        "english_name": "Tezos"
+    },
+    {
+        "market": "BTC-HIVE",
+        "korean_name": "í•˜ì´ë¸Œ",
+        "english_name": "Hive"
+    },
+    {
+        "market": "BTC-HBD",
+        "korean_name": "í•˜ì´ë¸Œë‹¬ëŸ¬",
+        "english_name": "Hive Dollar"
+    },
+    {
+        "market": "BTC-OBSR",
+        "korean_name": "ì˜µì €ë²„",
+        "english_name": "Observer"
+    },
+    {
+        "market": "BTC-DKA",
+        "korean_name": "ë””ì¹´ë¥´ê³ ",
+        "english_name": "dKargo"
+    },
+    {
+        "market": "KRW-STMX",
+        "korean_name": "ìŠ¤í†°ì—‘ìŠ¤",
+        "english_name": "StormX"
+    },
+    {
+        "market": "BTC-STMX",
+        "korean_name": "ìŠ¤í†°ì—‘ìŠ¤",
+        "english_name": "StormX"
+    },
+    {
+        "market": "BTC-AHT",
+        "korean_name": "ì•„í•˜í† í°",
+        "english_name": "AhaToken"
+    },
+    {
+        "market": "KRW-DKA",
+        "korean_name": "ë””ì¹´ë¥´ê³ ",
+        "english_name": "dKargo"
+    },
+    {
+        "market": "BTC-LINK",
+        "korean_name": "ì²´ì¸ë§í¬",
+        "english_name": "Chainlink"
+    },
+    {
+        "market": "KRW-HIVE",
+        "korean_name": "í•˜ì´ë¸Œ",
+        "english_name": "Hive"
+    },
+    {
+        "market": "KRW-KAVA",
+        "korean_name": "ì¹´ë°”",
+        "english_name": "Kava"
+    },
+    {
+        "market": "BTC-KAVA",
+        "korean_name": "ì¹´ë°”",
+        "english_name": "Kava"
+    },
+    {
+        "market": "KRW-AHT",
+        "korean_name": "ì•„í•˜í† í°",
+        "english_name": "AhaToken"
+    },
+    {
+        "market": "KRW-LINK",
+        "korean_name": "ì²´ì¸ë§í¬",
+        "english_name": "Chainlink"
+    },
+    {
+        "market": "KRW-XTZ",
+        "korean_name": "í…Œì¡°ìŠ¤",
+        "english_name": "Tezos"
+    },
+    {
+        "market": "KRW-BORA",
+        "korean_name": "ë³´ë¼",
+        "english_name": "BORA"
+    },
+    {
+        "market": "BTC-JST",
+        "korean_name": "ì €ìŠ¤íŠ¸",
+        "english_name": "JUST"
+    },
+    {
+        "market": "BTC-CHR",
+        "korean_name": "í¬ë¡œë¯¸ì•„",
+        "english_name": "Chromia"
+    },
+    {
+        "market": "BTC-DAD",
+        "korean_name": "ë‹¤ë“œ",
+        "english_name": "DAD"
+    },
+    {
+        "market": "BTC-TON",
+        "korean_name": "í† ì¹´ë§‰ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Tokamak Network"
+    },
+    {
+        "market": "KRW-JST",
+        "korean_name": "ì €ìŠ¤íŠ¸",
+        "english_name": "JUST"
+    },
+    {
+        "market": "BTC-CTSI",
+        "korean_name": "ì¹´ë¥´í…Œì‹œ",
+        "english_name": "Cartesi"
+    },
+    {
+        "market": "BTC-DOT",
+        "korean_name": "í´ì¹´ë‹·",
+        "english_name": "Polkadot"
+    },
+    {
+        "market": "KRW-CRO",
+        "korean_name": "í¬ë¡œë…¸ìŠ¤",
+        "english_name": "Cronos"
+    },
+    {
+        "market": "BTC-COMP",
+        "korean_name": "ì»´íŒŒìš´ë“œ",
+        "english_name": "Compound"
+    },
+    {
+        "market": "BTC-SXP",
+        "korean_name": "ì†”ë¼",
+        "english_name": "SXP"
+    },
+    {
+        "market": "BTC-HUNT",
+        "korean_name": "í—ŒíŠ¸",
+        "english_name": "HUNT"
+    },
+    {
+        "market": "KRW-TON",
+        "korean_name": "í† ì¹´ë§‰ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Tokamak Network"
+    },
+    {
+        "market": "BTC-LWA",
+        "korean_name": "ë£¨ë¯¸ì›¨ì´ë¸Œ",
+        "english_name": "LumiWave"
+    },
+    {
+        "market": "BTC-CRV",
+        "korean_name": "ì»¤ë¸Œ",
+        "english_name": "Curve"
+    },
+    {
+        "market": "BTC-ALGO",
+        "korean_name": "ì•Œê³ ëœë“œ",
+        "english_name": "Algorand"
+    },
+    {
+        "market": "BTC-RSR",
+        "korean_name": "ë¦¬ì €ë¸Œë¼ì´íŠ¸",
+        "english_name": "Reserve Rights"
+    },
+    {
+        "market": "KRW-SXP",
+        "korean_name": "ì†”ë¼",
+        "english_name": "SXP"
+    },
+    {
+        "market": "BTC-OXT",
+        "korean_name": "ì˜¤í‚¤ë“œ",
+        "english_name": "Orchid"
+    },
+    {
+        "market": "KRW-HUNT",
+        "korean_name": "í—ŒíŠ¸",
+        "english_name": "HUNT"
+    },
+    {
+        "market": "BTC-SAND",
+        "korean_name": "ìƒŒë“œë°•ìŠ¤",
+        "english_name": "The Sandbox"
+    },
+    {
+        "market": "BTC-SUN",
+        "korean_name": "ì¬",
+        "english_name": "SUN"
+    },
+    {
+        "market": "KRW-DOT",
+        "korean_name": "í´ì¹´ë‹·",
+        "english_name": "Polkadot"
+    },
+    {
+        "market": "BTC-QTCON",
+        "korean_name": "í€´ì¦ˆí†¡",
+        "english_name": "Quiztok"
+    },
+    {
+        "market": "BTC-MVL",
+        "korean_name": "ì— ë¸”",
+        "english_name": "MVL"
+    },
+    {
+        "market": "KRW-MVL",
+        "korean_name": "ì— ë¸”",
+        "english_name": "MVL"
+    },
+    {
+        "market": "BTC-REI",
+        "korean_name": "ë ˆì´",
+        "english_name": "REI"
+    },
+    {
+        "market": "BTC-AQT",
+        "korean_name": "ì•ŒíŒŒì¿¼í¬",
+        "english_name": "Alpha Quark Token"
+    },
+    {
+        "market": "BTC-AXS",
+        "korean_name": "ì—‘ì‹œì¸í”¼ë‹ˆí‹°",
+        "english_name": "Axie Infinity"
+    },
+    {
+        "market": "BTC-STRAX",
+        "korean_name": "ìŠ¤íŠ¸ë¼í‹°ìŠ¤",
+        "english_name": "Stratis"
+    },
+    {
+        "market": "KRW-STRAX",
+        "korean_name": "ìŠ¤íŠ¸ë¼í‹°ìŠ¤",
+        "english_name": "Stratis"
+    },
+    {
+        "market": "KRW-AQT",
+        "korean_name": "ì•ŒíŒŒì¿¼í¬",
+        "english_name": "Alpha Quark Token"
+    },
+    {
+        "market": "BTC-GLM",
+        "korean_name": "ê³¨ë ˜",
+        "english_name": "Golem"
+    },
+    {
+        "market": "KRW-GLM",
+        "korean_name": "ê³¨ë ˜",
+        "english_name": "Golem"
+    },
+    {
+        "market": "BTC-FCT2",
+        "korean_name": "í”¼ë¥´ë§ˆì²´ì¸",
+        "english_name": "FirmaChain"
+    },
+    {
+        "market": "KRW-META",
+        "korean_name": "ë©”íƒ€ë””ì›€",
+        "english_name": "Metadium"
+    },
+    {
+        "market": "KRW-FCT2",
+        "korean_name": "í”¼ë¥´ë§ˆì²´ì¸",
+        "english_name": "FirmaChain"
+    },
+    {
+        "market": "BTC-FIL",
+        "korean_name": "íŒŒì¼ì½”ì¸",
+        "english_name": "Filecoin"
+    },
+    {
+        "market": "BTC-UNI",
+        "korean_name": "ìœ ë‹ˆìŠ¤ì™‘",
+        "english_name": "Uniswap"
+    },
+    {
+        "market": "BTC-INJ",
+        "korean_name": "ì¸ì í‹°ë¸Œ",
+        "english_name": "Injective"
+    },
+    {
+        "market": "BTC-PROM",
+        "korean_name": "í”„ë¡¬",
+        "english_name": "Prom"
+    },
+    {
+        "market": "BTC-VAL",
+        "korean_name": "ë°¸ë¦¬ë””í‹°",
+        "english_name": "Validity"
+    },
+    {
+        "market": "BTC-PSG",
+        "korean_name": "íŒŒë¦¬ìƒì œë¥´ë§¹",
+        "english_name": "Paris Saint-Germain Fan Token"
+    },
+    {
+        "market": "BTC-JUV",
+        "korean_name": "ìœ ë²¤íˆ¬ìŠ¤",
+        "english_name": "Juventus Fan Token"
+    },
+    {
+        "market": "BTC-CBK",
+        "korean_name": "ì½”ë°•í† í°",
+        "english_name": "Cobak Token"
+    },
+    {
+        "market": "BTC-FOR",
+        "korean_name": "í¬íŠœë¸Œ",
+        "english_name": "ForTube"
+    },
+    {
+        "market": "KRW-CBK",
+        "korean_name": "ì½”ë°•í† í°",
+        "english_name": "Cobak Token"
+    },
+    {
+        "market": "BTC-BFC",
+        "korean_name": "ë°”ì´í”„ë¡œìŠ¤íŠ¸",
+        "english_name": "Bifrost"
+    },
+    {
+        "market": "BTC-HPO",
+        "korean_name": "íˆí¬í¬ë",
+        "english_name": "Hippocrat"
+    },
+    {
+        "market": "BTC-CELO",
+        "korean_name": "ì…€ë¡œ",
+        "english_name": "Celo"
+    },
+    {
+        "market": "KRW-SAND",
+        "korean_name": "ìƒŒë“œë°•ìŠ¤",
+        "english_name": "The Sandbox"
+    },
+    {
+        "market": "KRW-HPO",
+        "korean_name": "íˆí¬í¬ë",
+        "english_name": "Hippocrat"
+    },
+    {
+        "market": "BTC-IQ",
+        "korean_name": "ì•„ì´í",
+        "english_name": "IQ.wiki"
+    },
+    {
+        "market": "BTC-STX",
+        "korean_name": "ìŠ¤íƒìŠ¤",
+        "english_name": "Stacks"
+    },
+    {
+        "market": "KRW-DOGE",
+        "korean_name": "ë„ì§€ì½”ì¸",
+        "english_name": "Dogecoin"
+    },
+    {
+        "market": "BTC-NEAR",
+        "korean_name": "ë‹ˆì–´í”„ë¡œí† ì½œ",
+        "english_name": "NEAR Protocol"
+    },
+    {
+        "market": "BTC-AUCTION",
+        "korean_name": "ë°”ìš´ìŠ¤í† í°",
+        "english_name": "Bounce"
+    },
+    {
+        "market": "BTC-FLOW",
+        "korean_name": "í”Œë¡œìš°",
+        "english_name": "Flow"
+    },
+    {
+        "market": "BTC-STRIKE",
+        "korean_name": "ìŠ¤íŠ¸ë¼ì´í¬",
+        "english_name": "Strike"
+    },
+    {
+        "market": "KRW-STRIKE",
+        "korean_name": "ìŠ¤íŠ¸ë¼ì´í¬",
+        "english_name": "Strike"
+    },
+    {
+        "market": "BTC-PUNDIX",
+        "korean_name": "í€ë””ì—‘ìŠ¤",
+        "english_name": "Pundi X"
+    },
+    {
+        "market": "KRW-PUNDIX",
+        "korean_name": "í€ë””ì—‘ìŠ¤",
+        "english_name": "Pundi X"
+    },
+    {
+        "market": "KRW-FLOW",
+        "korean_name": "í”Œë¡œìš°",
+        "english_name": "Flow"
+    },
+    {
+        "market": "KRW-AXS",
+        "korean_name": "ì—‘ì‹œì¸í”¼ë‹ˆí‹°",
+        "english_name": "Axie Infinity"
+    },
+    {
+        "market": "KRW-STX",
+        "korean_name": "ìŠ¤íƒìŠ¤",
+        "english_name": "Stacks"
+    },
+    {
+        "market": "BTC-GRT",
+        "korean_name": "ë”ê·¸ë˜í”„",
+        "english_name": "The Graph"
+    },
+    {
+        "market": "BTC-SNX",
+        "korean_name": "ì‹ ì„¸í‹±ìŠ¤",
+        "english_name": "Synthetix"
+    },
+    {
+        "market": "BTC-USDP",
+        "korean_name": "íŒìŠ¤ë‹¬ëŸ¬",
+        "english_name": "Pax Dollar"
+    },
+    {
+        "market": "KRW-XEC",
+        "korean_name": "ì´ìºì‹œ",
+        "english_name": "eCash"
+    },
+    {
+        "market": "KRW-SOL",
+        "korean_name": "ì†”ë¼ë‚˜",
+        "english_name": "Solana"
+    },
+    {
+        "market": "BTC-SOL",
+        "korean_name": "ì†”ë¼ë‚˜",
+        "english_name": "Solana"
+    },
+    {
+        "market": "KRW-POL",
+        "korean_name": "í´ë¦¬ê³¤ì—ì½”ì‹œìŠ¤í…œí† í°",
+        "english_name": "Polygon Ecosystem Token"
+    },
+    {
+        "market": "BTC-POL",
+        "korean_name": "í´ë¦¬ê³¤ì—ì½”ì‹œìŠ¤í…œí† í°",
+        "english_name": "Polygon Ecosystem Token"
+    },
+    {
+        "market": "KRW-AAVE",
+        "korean_name": "ì—ì´ë¸Œ",
+        "english_name": "Aave"
+    },
+    {
+        "market": "KRW-1INCH",
+        "korean_name": "1ì¸ì¹˜ë„¤íŠ¸ì›Œí¬",
+        "english_name": "1inch Network"
+    },
+    {
+        "market": "BTC-AAVE",
+        "korean_name": "ì—ì´ë¸Œ",
+        "english_name": "Aave"
+    },
+    {
+        "market": "BTC-1INCH",
+        "korean_name": "1ì¸ì¹˜ë„¤íŠ¸ì›Œí¬",
+        "english_name": "1inch Network"
+    },
+    {
+        "market": "BTC-MASK",
+        "korean_name": "ë§ˆìŠ¤í¬ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Mask Network"
+    },
+    {
+        "market": "KRW-ALGO",
+        "korean_name": "ì•Œê³ ëœë“œ",
+        "english_name": "Algorand"
+    },
+    {
+        "market": "BTC-AUDIO",
+        "korean_name": "ì˜¤ë””ìš°ìŠ¤",
+        "english_name": "Audius"
+    },
+    {
+        "market": "KRW-NEAR",
+        "korean_name": "ë‹ˆì–´í”„ë¡œí† ì½œ",
+        "english_name": "NEAR Protocol"
+    },
+    {
+        "market": "BTC-YGG",
+        "korean_name": "ì¼ë“œê¸¸ë“œê²Œì„ì¦ˆ",
+        "english_name": "Yield Guild Games"
+    },
+    {
+        "market": "BTC-GTC",
+        "korean_name": "ê¹ƒì½”ì¸",
+        "english_name": "Gitcoin"
+    },
+    {
+        "market": "BTC-OCEAN",
+        "korean_name": "ì˜¤ì…˜í”„ë¡œí† ì½œ",
+        "english_name": "Ocean Protocol"
+    },
+    {
+        "market": "BTC-CTC",
+        "korean_name": "í¬ë ˆë”§ì½”ì¸",
+        "english_name": "Creditcoin"
+    },
+    {
+        "market": "BTC-LPT",
+        "korean_name": "ë¼ì´ë¸Œí”¼ì–´",
+        "english_name": "Livepeer"
+    },
+    {
+        "market": "KRW-AVAX",
+        "korean_name": "ì•„ë°œë€ì²´",
+        "english_name": "Avalanche"
+    },
+    {
+        "market": "BTC-AVAX",
+        "korean_name": "ì•„ë°œë€ì²´",
+        "english_name": "Avalanche"
+    },
+    {
+        "market": "BTC-IMX",
+        "korean_name": "ì´ë®¤í„°ë¸”ì—‘ìŠ¤",
+        "english_name": "Immutable X"
+    },
+    {
+        "market": "BTC-RENDER",
+        "korean_name": "ë Œë”í† í°",
+        "english_name": "Render Token"
+    },
+    {
+        "market": "BTC-RLY",
+        "korean_name": "ë ë¦¬",
+        "english_name": "Rally"
+    },
+    {
+        "market": "KRW-T",
+        "korean_name": "ì“°ë ˆìŠ¤í™€ë“œ",
+        "english_name": "Threshold"
+    },
+    {
+        "market": "BTC-T",
+        "korean_name": "ì“°ë ˆìŠ¤í™€ë“œ",
+        "english_name": "Threshold"
+    },
+    {
+        "market": "KRW-CELO",
+        "korean_name": "ì…€ë¡œ",
+        "english_name": "Celo"
+    },
+    {
+        "market": "BTC-RAD",
+        "korean_name": "ë˜ë“œì›ìŠ¤",
+        "english_name": "Radworks"
+    },
+    {
+        "market": "BTC-AGLD",
+        "korean_name": "ì–´ë“œë²¤ì²˜ê³¨ë“œ",
+        "english_name": "Adventure Gold"
+    },
+    {
+        "market": "BTC-API3",
+        "korean_name": "ì—ì´í”¼ì•„ì´ì“°ë¦¬",
+        "english_name": "API3"
+    },
+    {
+        "market": "BTC-ARPA",
+        "korean_name": "ì•ŒíŒŒ",
+        "english_name": "ARPA"
+    },
+    {
+        "market": "BTC-ENS",
+        "korean_name": "ì´ë”ë¦¬ì›€ë„¤ì„ì„œë¹„ìŠ¤",
+        "english_name": "Ethereum Name Service"
+    },
+    {
+        "market": "KRW-GMT",
+        "korean_name": "ìŠ¤í…Œí”ˆ",
+        "english_name": "Stepn"
+    },
+    {
+        "market": "BTC-GMT",
+        "korean_name": "ìŠ¤í…Œí”ˆ",
+        "english_name": "Stepn"
+    },
+    {
+        "market": "BTC-APE",
+        "korean_name": "ì—ì´í”„ì½”ì¸",
+        "english_name": "ApeCoin"
+    },
+    {
+        "market": "BTC-RAY",
+        "korean_name": "ë ˆì´ë””ì›€",
+        "english_name": "Raydium"
+    },
+    {
+        "market": "KRW-APT",
+        "korean_name": "ì•±í† ìŠ¤",
+        "english_name": "Aptos"
+    },
+    {
+        "market": "BTC-APT",
+        "korean_name": "ì•±í† ìŠ¤",
+        "english_name": "Aptos"
+    },
+    {
+        "market": "BTC-ACM",
+        "korean_name": "ACë°€ë€",
+        "english_name": "AC Milan Fan Token"
+    },
+    {
+        "market": "BTC-AFC",
+        "korean_name": "ì•„ìŠ¤ë‚ ",
+        "english_name": "Arsenal Fan Token"
+    },
+    {
+        "market": "BTC-ATM",
+        "korean_name": "ì•„í‹€ë ˆí‹°ì½”ë§ˆë“œë¦¬ë“œ",
+        "english_name": "Atletico De Madrid Fan Token"
+    },
+    {
+        "market": "BTC-BAR",
+        "korean_name": "FCë°”ë¥´ì…€ë¡œë‚˜",
+        "english_name": "FC Barcelona Fan Token"
+    },
+    {
+        "market": "BTC-CITY",
+        "korean_name": "ë§¨ì²´ìŠ¤í„°ì‹œí‹°",
+        "english_name": "Manchester City Fan Token"
+    },
+    {
+        "market": "BTC-INTER",
+        "korean_name": "ì¸í„°ë°€ë€",
+        "english_name": "Inter Milan Fan Token"
+    },
+    {
+        "market": "BTC-NAP",
+        "korean_name": "ë‚˜í´ë¦¬",
+        "english_name": "Napoli Fan Token"
+    },
+    {
+        "market": "KRW-SHIB",
+        "korean_name": "ì‹œë°”ì´ëˆ„",
+        "english_name": "Shiba Inu"
+    },
+    {
+        "market": "BTC-G",
+        "korean_name": "ê·¸ë˜ë¹„í‹°",
+        "english_name": "Gravity"
+    },
+    {
+        "market": "BTC-ASTR",
+        "korean_name": "ì•„ìŠ¤íƒ€",
+        "english_name": "Astar"
+    },
+    {
+        "market": "BTC-BLUR",
+        "korean_name": "ë¸”ëŸ¬",
+        "english_name": "Blur"
+    },
+    {
+        "market": "KRW-MASK",
+        "korean_name": "ë§ˆìŠ¤í¬ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Mask Network"
+    },
+    {
+        "market": "BTC-ACS",
+        "korean_name": "ì•¡ì„¸ìŠ¤í”„ë¡œí† ì½œ",
+        "english_name": "Access Protocol"
+    },
+    {
+        "market": "BTC-MAGIC",
+        "korean_name": "ë§¤ì§",
+        "english_name": "MAGIC"
+    },
+    {
+        "market": "KRW-ARB",
+        "korean_name": "ì•„ë¹„íŠ¸ëŸ¼",
+        "english_name": "Arbitrum"
+    },
+    {
+        "market": "BTC-ARB",
+        "korean_name": "ì•„ë¹„íŠ¸ëŸ¼",
+        "english_name": "Arbitrum"
+    },
+    {
+        "market": "KRW-EGLD",
+        "korean_name": "ë©€í‹°ë²„ìŠ¤ì—‘ìŠ¤",
+        "english_name": "MultiversX"
+    },
+    {
+        "market": "BTC-EGLD",
+        "korean_name": "ë©€í‹°ë²„ìŠ¤ì—‘ìŠ¤",
+        "english_name": "MultiversX"
+    },
+    {
+        "market": "KRW-SUI",
+        "korean_name": "ìˆ˜ì´",
+        "english_name": "Sui"
+    },
+    {
+        "market": "BTC-SUI",
+        "korean_name": "ìˆ˜ì´",
+        "english_name": "Sui"
+    },
+    {
+        "market": "KRW-GRT",
+        "korean_name": "ë”ê·¸ë˜í”„",
+        "english_name": "The Graph"
+    },
+    {
+        "market": "KRW-BLUR",
+        "korean_name": "ë¸”ëŸ¬",
+        "english_name": "Blur"
+    },
+    {
+        "market": "BTC-MINA",
+        "korean_name": "ë¯¸ë‚˜",
+        "english_name": "Mina"
+    },
+    {
+        "market": "KRW-IMX",
+        "korean_name": "ì´ë®¤í„°ë¸”ì—‘ìŠ¤",
+        "english_name": "Immutable X"
+    },
+    {
+        "market": "BTC-STG",
+        "korean_name": "ìŠ¤íƒ€ê²Œì´íŠ¸íŒŒì´ë‚¸ìŠ¤",
+        "english_name": "Stargate Finance"
+    },
+    {
+        "market": "BTC-SEI",
+        "korean_name": "ì„¸ì´",
+        "english_name": "Sei"
+    },
+    {
+        "market": "KRW-SEI",
+        "korean_name": "ì„¸ì´",
+        "english_name": "Sei"
+    },
+    {
+        "market": "BTC-CYBER",
+        "korean_name": "ì‚¬ì´ë²„",
+        "english_name": "Cyber"
+    },
+    {
+        "market": "BTC-GLMR",
+        "korean_name": "ë¬¸ë¹”",
+        "english_name": "Moonbeam"
+    },
+    {
+        "market": "KRW-MINA",
+        "korean_name": "ë¯¸ë‚˜",
+        "english_name": "Mina"
+    },
+    {
+        "market": "BTC-ID",
+        "korean_name": "ìŠ¤í˜ì´ìŠ¤ì•„ì´ë””",
+        "english_name": "SPACE ID"
+    },
+    {
+        "market": "BTC-AXL",
+        "korean_name": "ì—‘ì…€ë¼",
+        "english_name": "Axelar"
+    },
+    {
+        "market": "KRW-CTC",
+        "korean_name": "í¬ë ˆë”§ì½”ì¸",
+        "english_name": "Creditcoin"
+    },
+    {
+        "market": "KRW-ASTR",
+        "korean_name": "ì•„ìŠ¤íƒ€",
+        "english_name": "Astar"
+    },
+    {
+        "market": "BTC-SPURS",
+        "korean_name": "í† íŠ¸ë„˜í™‹ìŠ¤í¼",
+        "english_name": "Tottenham Hotspur"
+    },
+    {
+        "market": "KRW-ID",
+        "korean_name": "ìŠ¤í˜ì´ìŠ¤ì•„ì´ë””",
+        "english_name": "SPACE ID"
+    },
+    {
+        "market": "KRW-PYTH",
+        "korean_name": "í”¼ìŠ¤ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Pyth Network"
+    },
+    {
+        "market": "BTC-PYTH",
+        "korean_name": "í”¼ìŠ¤ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Pyth Network"
+    },
+    {
+        "market": "BTC-ALT",
+        "korean_name": "ì•ŒíŠ¸ë ˆì´ì–´",
+        "english_name": "Altlayer"
+    },
+    {
+        "market": "BTC-POKT",
+        "korean_name": "í¬ì¼“ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Pocket Network"
+    },
+    {
+        "market": "USDT-POKT",
+        "korean_name": "í¬ì¼“ë„¤íŠ¸ì›Œí¬",
+        "english_name": "Pocket Network"
+    },
+    {
+        "market": "KRW-MNT",
+        "korean_name": "ë§¨í‹€",
+        "english_name": "Mantle"
+    },
+    {
+        "market": "BTC-MNT",
+        "korean_name": "ë§¨í‹€",
+        "english_name": "Mantle"
+    },
+    {
+        "market": "USDT-MNT",
+        "korean_name": "ë§¨í‹€",
+        "english_name": "Mantle"
+    },
+    {
+        "market": "BTC-BIGTIME",
+        "korean_name": "ë¹…íƒ€ì„",
+        "english_name": "Big Time"
+    },
+    {
+        "market": "USDT-BIGTIME",
+        "korean_name": "ë¹…íƒ€ì„",
+        "english_name": "Big Time"
+    },
+    {
+        "market": "KRW-AKT",
+        "korean_name": "ì•„ì¹´ì‹œë„¤íŠ¸ì›Œí¬",
+        "english_name": "Akash Network"
+    },
+    {
+        "market": "BTC-AKT",
+        "korean_name": "ì•„ì¹´ì‹œë„¤íŠ¸ì›Œí¬",
+        "english_name": "Akash Network"
+    },
+    {
+        "market": "USDT-AKT",
+        "korean_name": "ì•„ì¹´ì‹œë„¤íŠ¸ì›Œí¬",
+        "english_name": "Akash Network"
+    },
+    {
+        "market": "KRW-ZETA",
+        "korean_name": "ì œíƒ€ì²´ì¸",
+        "english_name": "ZetaChain"
+    },
+    {
+        "market": "BTC-ZETA",
+        "korean_name": "ì œíƒ€ì²´ì¸",
+        "english_name": "ZetaChain"
+    },
+    {
+        "market": "USDT-ZETA",
+        "korean_name": "ì œíƒ€ì²´ì¸",
+        "english_name": "ZetaChain"
+    },
+    {
+        "market": "BTC-OMNI",
+        "korean_name": "ì˜´ë‹ˆë„¤íŠ¸ì›Œí¬",
+        "english_name": "Omni Network"
+    },
+    {
+        "market": "USDT-OMNI",
+        "korean_name": "ì˜´ë‹ˆë„¤íŠ¸ì›Œí¬",
+        "english_name": "Omni Network"
+    },
+    {
+        "market": "BTC-OAS",
+        "korean_name": "ì˜¤ì•„ì‹œìŠ¤",
+        "english_name": "Oasys"
+    },
+    {
+        "market": "USDT-OAS",
+        "korean_name": "ì˜¤ì•„ì‹œìŠ¤",
+        "english_name": "Oasys"
+    },
+    {
+        "market": "KRW-AUCTION",
+        "korean_name": "ë°”ìš´ìŠ¤í† í°",
+        "english_name": "Bounce"
+    },
+    {
+        "market": "KRW-STG",
+        "korean_name": "ìŠ¤íƒ€ê²Œì´íŠ¸íŒŒì´ë‚¸ìŠ¤",
+        "english_name": "Stargate Finance"
+    },
+    {
+        "market": "KRW-BEAM",
+        "korean_name": "ë¹”",
+        "english_name": "Beam"
+    },
+    {
+        "market": "BTC-BEAM",
+        "korean_name": "ë¹”",
+        "english_name": "Beam"
+    },
+    {
+        "market": "USDT-BEAM",
+        "korean_name": "ë¹”",
+        "english_name": "Beam"
+    },
+    {
+        "market": "KRW-TAIKO",
+        "korean_name": "íƒ€ì´ì½”",
+        "english_name": "Taiko"
+    },
+    {
+        "market": "BTC-TAIKO",
+        "korean_name": "íƒ€ì´ì½”",
+        "english_name": "Taiko"
+    },
+    {
+        "market": "USDT-TAIKO",
+        "korean_name": "íƒ€ì´ì½”",
+        "english_name": "Taiko"
+    },
+    {
+        "market": "KRW-USDT",
+        "korean_name": "í…Œë”",
+        "english_name": "Tether"
+    },
+    {
+        "market": "BTC-USDT",
+        "korean_name": "í…Œë”",
+        "english_name": "Tether"
+    },
+    {
+        "market": "KRW-ONDO",
+        "korean_name": "ì˜¨ë„íŒŒì´ë‚¸ìŠ¤",
+        "english_name": "Ondo Finance"
+    },
+    {
+        "market": "BTC-ONDO",
+        "korean_name": "ì˜¨ë„íŒŒì´ë‚¸ìŠ¤",
+        "english_name": "Ondo Finance"
+    },
+    {
+        "market": "USDT-ONDO",
+        "korean_name": "ì˜¨ë„íŒŒì´ë‚¸ìŠ¤",
+        "english_name": "Ondo Finance"
+    },
+    {
+        "market": "BTC-NEO",
+        "korean_name": "ë„¤ì˜¤",
+        "english_name": "NEO"
+    },
+    {
+        "market": "USDT-NEO",
+        "korean_name": "ë„¤ì˜¤",
+        "english_name": "NEO"
+    },
+    {
+        "market": "BTC-GAS",
+        "korean_name": "ê°€ìŠ¤",
+        "english_name": "GAS"
+    },
+    {
+        "market": "USDT-GAS",
+        "korean_name": "ê°€ìŠ¤",
+        "english_name": "GAS"
+    },
+    {
+        "market": "BTC-TT",
+        "korean_name": "ì¬ë”ì½”ì–´",
+        "english_name": "ThunderCore"
+    },
+    {
+        "market": "BTC-GAME2",
+        "korean_name": "ê²Œì„ë¹Œë“œ",
+        "english_name": "GameBuild"
+    },
+    {
+        "market": "USDT-SOL",
+        "korean_name": "ì†”ë¼ë‚˜",
+        "english_name": "Solana"
+    },
+    {
+        "market": "KRW-ZRO",
+        "korean_name": "ë ˆì´ì–´ì œë¡œ",
+        "english_name": "LayerZero"
+    },
+    {
+        "market": "BTC-ZRO",
+        "korean_name": "ë ˆì´ì–´ì œë¡œ",
+        "english_name": "LayerZero"
+    },
+    {
+        "market": "USDT-ZRO",
+        "korean_name": "ë ˆì´ì–´ì œë¡œ",
+        "english_name": "LayerZero"
+    },
+    {
+        "market": "KRW-BLAST",
+        "korean_name": "ë¸”ë¼ìŠ¤íŠ¸",
+        "english_name": "Blast"
+    },
+    {
+        "market": "BTC-BLAST",
+        "korean_name": "ë¸”ë¼ìŠ¤íŠ¸",
+        "english_name": "Blast"
+    },
+    {
+        "market": "USDT-BLAST",
+        "korean_name": "ë¸”ë¼ìŠ¤íŠ¸",
+        "english_name": "Blast"
+    },
+    {
+        "market": "KRW-JUP",
+        "korean_name": "ì£¼í”¼í„°",
+        "english_name": "Jupiter"
+    },
+    {
+        "market": "BTC-JUP",
+        "korean_name": "ì£¼í”¼í„°",
+        "english_name": "Jupiter"
+    },
+    {
+        "market": "USDT-JUP",
+        "korean_name": "ì£¼í”¼í„°",
+        "english_name": "Jupiter"
+    },
+    {
+        "market": "KRW-ENS",
+        "korean_name": "ì´ë”ë¦¬ì›€ë„¤ì„ì„œë¹„ìŠ¤",
+        "english_name": "Ethereum Name Service"
+    },
+    {
+        "market": "KRW-G",
+        "korean_name": "ê·¸ë˜ë¹„í‹°",
+        "english_name": "Gravity"
+    },
+    {
+        "market": "KRW-PENDLE",
+        "korean_name": "íœë“¤",
+        "english_name": "Pendle"
+    },
+    {
+        "market": "BTC-PENDLE",
+        "korean_name": "íœë“¤",
+        "english_name": "Pendle"
+    },
+    {
+        "market": "KRW-ATH",
+        "korean_name": "ì—ì´ì…”",
+        "english_name": "Aethir"
+    },
+    {
+        "market": "BTC-ATH",
+        "korean_name": "ì—ì´ì…”",
+        "english_name": "Aethir"
+    },
+    {
+        "market": "USDT-BRETT",
+        "korean_name": "ë¸Œë ›",
+        "english_name": "Brett"
+    },
+    {
+        "market": "USDT-PEPE",
+        "korean_name": "í˜í˜",
+        "english_name": "Pepe"
+    },
+    {
+        "market": "KRW-USDC",
+        "korean_name": "ìœ ì—ìŠ¤ë””ì½”ì¸",
+        "english_name": "USD Coin"
+    },
+    {
+        "market": "BTC-USDC",
+        "korean_name": "ìœ ì—ìŠ¤ë””ì½”ì¸",
+        "english_name": "USD Coin"
+    },
+    {
+        "market": "USDT-USDC",
+        "korean_name": "ìœ ì—ìŠ¤ë””ì½”ì¸",
+        "english_name": "USD Coin"
+    },
+    {
+        "market": "KRW-UXLINK",
+        "korean_name": "ìœ ì—‘ìŠ¤ë§í¬",
+        "english_name": "UXLINK"
+    },
+    {
+        "market": "BTC-UXLINK",
+        "korean_name": "ìœ ì—‘ìŠ¤ë§í¬",
+        "english_name": "UXLINK"
+    },
+    {
+        "market": "USDT-UXLINK",
+        "korean_name": "ìœ ì—‘ìŠ¤ë§í¬",
+        "english_name": "UXLINK"
+    },
+    {
+        "market": "KRW-BIGTIME",
+        "korean_name": "ë¹…íƒ€ì„",
+        "english_name": "Big Time"
+    },
+    {
+        "market": "KRW-CKB",
+        "korean_name": "ë„ˆë³´ìŠ¤",
+        "english_name": "Nervos Network"
+    },
+    {
+        "market": "BTC-CKB",
+        "korean_name": "ë„ˆë³´ìŠ¤",
+        "english_name": "Nervos Network"
+    },
+    {
+        "market": "USDT-CKB",
+        "korean_name": "ë„ˆë³´ìŠ¤",
+        "english_name": "Nervos Network"
+    },
+    {
+        "market": "BTC-MEW",
+        "korean_name": "ìº£ì¸ì–´ë…ìŠ¤ì›”ë“œ",
+        "english_name": "cat in a dogs world"
+    },
+    {
+        "market": "USDT-MEW",
+        "korean_name": "ìº£ì¸ì–´ë…ìŠ¤ì›”ë“œ",
+        "english_name": "cat in a dogs world"
+    },
+    {
+        "market": "KRW-W",
+        "korean_name": "ì›œí™€",
+        "english_name": "Wormhole"
+    },
+    {
+        "market": "BTC-W",
+        "korean_name": "ì›œí™€",
+        "english_name": "Wormhole"
+    },
+    {
+        "market": "USDT-W",
+        "korean_name": "ì›œí™€",
+        "english_name": "Wormhole"
+    },
+    {
+        "market": "KRW-CARV",
+        "korean_name": "ì¹´ë¸Œ",
+        "english_name": "CARV"
+    },
+    {
+        "market": "BTC-CARV",
+        "korean_name": "ì¹´ë¸Œ",
+        "english_name": "CARV"
+    },
+    {
+        "market": "USDT-CARV",
+        "korean_name": "ì¹´ë¸Œ",
+        "english_name": "CARV"
+    },
+    {
+        "market": "KRW-INJ",
+        "korean_name": "ì¸ì í‹°ë¸Œ",
+        "english_name": "Injective"
+    },
+    {
+        "market": "USDT-INJ",
+        "korean_name": "ì¸ì í‹°ë¸Œ",
+        "english_name": "Injective"
+    },
+    {
+        "market": "KRW-MEW",
+        "korean_name": "ìº£ì¸ì–´ë…ìŠ¤ì›”ë“œ",
+        "english_name": "cat in a dogs world"
+    },
+    {
+        "market": "USDT-BONK",
+        "korean_name": "ë´‰í¬",
+        "english_name": "Bonk"
+    },
+    {
+        "market": "KRW-UNI",
+        "korean_name": "ìœ ë‹ˆìŠ¤ì™‘",
+        "english_name": "Uniswap"
+    },
+    {
+        "market": "USDT-UNI",
+        "korean_name": "ìœ ë‹ˆìŠ¤ì™‘",
+        "english_name": "Uniswap"
+    },
+    {
+        "market": "KRW-SAFE",
+        "korean_name": "ì„¸ì´í”„",
+        "english_name": "Safe"
+    },
+    {
+        "market": "BTC-SAFE",
+        "korean_name": "ì„¸ì´í”„",
+        "english_name": "Safe"
+    },
+    {
+        "market": "USDT-SAFE",
+        "korean_name": "ì„¸ì´í”„",
+        "english_name": "Safe"
+    },
+    {
+        "market": "KRW-DRIFT",
+        "korean_name": "ë“œë¦¬í”„íŠ¸",
+        "english_name": "Drift"
+    },
+    {
+        "market": "BTC-DRIFT",
+        "korean_name": "ë“œë¦¬í”„íŠ¸",
+        "english_name": "Drift"
+    },
+    {
+        "market": "USDT-DRIFT",
+        "korean_name": "ë“œë¦¬í”„íŠ¸",
+        "english_name": "Drift"
+    }
+]
