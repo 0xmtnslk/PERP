@@ -64,4 +64,4 @@ python3 /root/bitget_perp_order.py
 python3 /root/kapat.py
 ```
 
-// Her 2 dosya sürekli çalışır durumda olacak screen içinde.
+## Her 2 dosya sürekli çalışır durumda olacak screen içinde.
