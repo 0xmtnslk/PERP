@@ -102,7 +102,24 @@ def close_all_positions(api_key, api_secret_key, passphrase):
   try:
       print("Kapama Yaniti:", response.json())
   except json.JSONDecodeError:
-      print("Yanıt JSON formatında degil:", response.text)
+      print("Yanit JSON formatinda degil:", response.text)
+
+# API'den maxLeverage degerini al
+def get_max_leverage(symbol):
+  url = f"https://api.bitget.com/api/mix/v1/market/symbol-leverage?symbol={symbol}"
+  response = requests.get(url)
+  
+  if response.status_code == 200:
+      data = response.json()
+      if data['code'] == '00000':
+          max_leverage = data['data']['maxLeverage']
+          return max_leverage
+      else:
+          print(f"API hatasi: {data['msg']}")
+  else:
+      print(f"HTTP hatasi: {response.status_code}")
+  
+  return None
 
 if __name__ == '__main__':
   # Dosya yollarini tanimla
@@ -129,17 +146,26 @@ if __name__ == '__main__':
       if coin_price:
           print(f"Anlik Coin Fiyati: {coin_price['last_price']}")  # Coin fiyatini ekrana yaz
           
+          # Max leverage degerini al
+          maxLeverage = get_max_leverage(symbol)
+          if maxLeverage is None:
+              print("Max leverage alinamadi.")
+              exit()
+
+          # Max leverage degerini float'a cevir
+          maxLeverage = float(maxLeverage)
+
           # Coin fiyatini %1.5 arttir
           coin_price_long = float(coin_price['last_price']) * 1.015
           
           # Coin boyutunu hesapla
           open_USDT = float(credentials.get("open_USDT", 0))
-          coin_size = open_USDT / float(coin_price['last_price'])
-          
+          coin_size = open_USDT * maxLeverage
+
           # Fiyati ve boyutu uygun hassasiyete yuvarla
           coin_price_long = round(coin_price_long, 3)  # 0.001 hassasiyetine yuvarla
           coin_size = round(coin_size, 6)    # 0.000001 hassasiyetine yuvarla
-          
+
           # POST istegi icin imza olusturma
           timestamp = str(get_timestamp())
           request_path = "/api/mix/v1/order/placeOrder"
