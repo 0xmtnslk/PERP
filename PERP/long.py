@@ -160,11 +160,12 @@ if __name__ == '__main__':
           
           # Coin boyutunu hesapla
           open_USDT = float(credentials.get("open_USDT", 0))
-          coin_size = open_USDT * maxLeverage
+          last_price = float(credentials.get("last_price", 0))
+          coin_size = open_USDT * maxLeverage / last_price
 
           # Fiyati ve boyutu uygun hassasiyete yuvarla
           coin_price_long = round(coin_price_long, 3)  # 0.001 hassasiyetine yuvarla
-          coin_size = round(coin_size, 6)    # 0.000001 hassasiyetine yuvarla
+          coin_size = round(coin_size, 0)    # 0 hassasiyetine yuvarla
 
           # POST istegi icin imza olusturma
           timestamp = str(get_timestamp())
