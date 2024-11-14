@@ -163,8 +163,12 @@ if __name__ == '__main__':
           last_price = float(credentials.get("last_price", 0))
           coin_size = open_USDT * maxLeverage / last_price
 
+        # /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
+          with open('/root/gateio/round_gate.txt', 'r') as file:
+          round_gate = int(file.read().strip())  # Dosyadan okunan degerleri tam sayiya cevir
+
           # Fiyati ve boyutu uygun hassasiyete yuvarla
-          coin_price_long = round(coin_price_long, 3)  # 0.001 hassasiyetine yuvarla
+          coin_price_long = round(coin_price_long, round_gate)  # Dinamik değişken hassasiyetine yuvarla
           coin_size = round(coin_size, 0)    # 0 hassasiyetine yuvarla
 
           # POST istegi icin imza olusturma
