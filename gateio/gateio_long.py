@@ -66,7 +66,7 @@ with open('/root/gateio/round_gate.txt', 'r') as file:
 
 # Coin boyutunu uygun hassasiyete yuvarla
 coin_price_long = round(coin_price_long, round_gate)  # Dinamik hassasiyete yuvarla
-gateio_coin_size = round(gateio_coin_size, round_gate)  # Dinamik hassasiyete yuvarla
+gateio_coin_size = round(gateio_coin_size, 0)  # Tam sayıya yuvarla
 
 # Imza olusturma fonksiyonu
 def gen_sign(method, url, query_string=None, payload_string=None):
