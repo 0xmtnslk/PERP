@@ -132,4 +132,4 @@ screen -S API_Telegram_json
 python3 /root/telegram_degisken.py
 ```
 
-## Her 3 dosya sürekli çalışır durumda olacak screen içinde çalışacak.
+## Her YEDI python script sürekli çalışır durumda olacak screen içinde çalışacak. ( Not: telegram kısmı devreye alındığında çalışabilir)
