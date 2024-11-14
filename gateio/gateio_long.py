@@ -41,7 +41,7 @@ output_data = {
   "symbol": gateio_symbol,
   "price": gateio_price,
   "leverage": gateio_leverage,
-  "mark_price_round": gateio_mark_price_round  # Yeni alanÃ„Â± ekle
+  "mark_price_round": gateio_mark_price_round  
 }
 
 with open('/root/gateio/perp_sorgu.json', 'w') as json_file:
@@ -52,7 +52,7 @@ with open('/root/gateio/perp_sorgu.json', 'r') as json_file:
   perp_data = json.load(json_file)
   gateio_symbol = perp_data['symbol']
   gateio_leverage = perp_data['leverage']
-  gateio_mark_price_round = perp_data['mark_price_round']  # Yeni alanÃ„Â± oku
+  gateio_mark_price_round = perp_data['mark_price_round']  
 
 # Coin fiyatini %1 arttir
 coin_price_long = gateio_price * 1.03
@@ -62,7 +62,7 @@ gateio_coin_size = gateio_open_USDT * gateio_leverage / gateio_price
 
 # /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
 with open('/root/gateio/round_gate.txt', 'r') as file:
-  round_gate = int(file.read().strip())  # Dosyadan okunan deÄŸeri tam sayÄ±ya Ã§evir
+  round_gate = int(file.read().strip())  # Dosyadan okunan degerleri tam sayiya cevir
 
 # Coin boyutunu uygun hassasiyete yuvarla
 coin_price_long = round(coin_price_long, round_gate)  # Dinamik hassasiyete yuvarla
