@@ -103,17 +103,6 @@ python3 /root/gateio/symbol_gate.py
 ```
 
 
-## Bir screen içinde "symbol_gate.py" çalıştırıyoruz bu bizim upbit için tarama yaptığımız işlem çiftini gate.io formatına çevirecek.
-
-```
-screen -S API_gateio_symbol
-```
-```
-python3 /root/gateio/symbol_gate.py
-```
-
-
-
 ## Bir screen içinde "round_gate.py" çalıştırıyoruz bunun 2 görevi var. Birincisi merkezi secret.json dosyasını ilgili jsonlara aktarmak. İkincisi gate.io emir girmek için kaç kademeli yuvarlama yapacağını çekip formuluze eder.
 ```
 screen -S API_gateio_round
