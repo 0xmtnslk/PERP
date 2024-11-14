@@ -19,7 +19,7 @@ source myprojectenv/bin/activate
 
 # 3. Gerekli Python Kütüphanelerini Yükleme
 ```
-pip install python-bitget
+pip install python-bitget gate-api
 ```
 ```
 pip install bitget-python-connector
@@ -33,10 +33,23 @@ pip install websocket-client
 
 # 4.PERP klasörü içinde secret.json dosya içinde API bilgilerinizi değiştirin
 ```
-api_key = ""
-secret_key = ""
-passphrase = ""
-initial_symbol = ""
+{
+        "bitget_example": {
+        "api_key":"",
+        "secret_key":"",
+        "passphrase":"",                   # Bitget api key oluştururken girdiğiniz şifre
+        "open_USDT": "100",                # İşlem açılacak bitget futures bakiyeniz   
+        "close_yuzde": "1.20",             # İşlem açıldığında otomatik kapatılması için kar hedefi 1.20 ( %20 kar demek)
+        "initial_symbol" : "XLMUSDT_UMCBL" # Upbit API'deki son USDT paritesindeki coin sembolü bitget formatında yazılacak
+    },
+        "gateio_example": {
+        "api_key":"",
+        "secret_key":"",
+        "open_USDT": "100",                # İşlem açılacak gate.io futures bakiyeniz 
+        "close_yuzde": 1.20,               # İşlem açıldığında otomatik kapatılması için kar hedefi 1.20 ( %20 kar demek)
+        "initial_symbol" : "XLM_USDT"      # Upbit API'deki son USDT paritesindeki coin sembolü gate.io formatında yazılacak
+    }
+}
 ```
 
 # Çalıştırma
@@ -61,8 +74,54 @@ python3 /root/bitget_perp_order.py
 ##  Acil durumlarda işlem durdurmak için CTRL+C ile  bitget_perp_order.py durdurup aşağıdaki komudu girin.
 
 ```
-python3 /root/kapat.py
+python3 /root/PERP/kapat.py
 ```
+
+## Bir screen içinde "gateio_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
+
+```
+screen -S API_gateio
+```
+```
+python3 /root/gateio_perp_order.py
+```
+
+##  Acil durumlarda işlem durdurmak için CTRL+C ile  gateio_perp_order.py durdurup aşağıdaki komudu girin.
+
+```
+python3 /root/gateio/kapat.py
+```
+
+
+## Bir screen içinde "symbol_gate.py" çalıştırıyoruz bu bizim upbit için tarama yaptığımız işlem çiftini gate.io formatına çevirecek.
+
+```
+screen -S API_gateio_symbol
+```
+```
+python3 /root/gateio/symbol_gate.py
+```
+
+
+## Bir screen içinde "symbol_gate.py" çalıştırıyoruz bu bizim upbit için tarama yaptığımız işlem çiftini gate.io formatına çevirecek.
+
+```
+screen -S API_gateio_symbol
+```
+```
+python3 /root/gateio/symbol_gate.py
+```
+
+
+
+## Bir screen içinde "round_gate.py" çalıştırıyoruz bunun 2 görevi var. Birincisi merkezi secret.json dosyasını ilgili jsonlara aktarmak. İkincisi gate.io emir girmek için kaç kademeli yuvarlama yapacağını çekip formuluze eder.
+```
+screen -S API_gateio_round
+```
+```
+python3 /root/gateio/round_gate.py
+```
+
 
 ## Telegram bot için veri aktarmak istediğimiz için Bir screen içinde "telegram_degisken.py" çalıştırıyoruz bu txt uzantılı dosyamızın aynısını json olarak yazar.
 
