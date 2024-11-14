@@ -58,7 +58,7 @@ with open('/root/gateio/perp_sorgu.json', 'r') as json_file:
 coin_price_long = gateio_price * 1.03
 
 # Coin boyutunu hesapla
-gateio_coin_size = gateio_open_USDT * gateio_leverage
+gateio_coin_size = gateio_open_USDT * gateio_leverage / gateio_price
 
 # /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
 with open('/root/gateio/round_gate.txt', 'r') as file:
@@ -66,6 +66,7 @@ with open('/root/gateio/round_gate.txt', 'r') as file:
 
 # Coin boyutunu uygun hassasiyete yuvarla
 coin_price_long = round(coin_price_long, round_gate)  # Dinamik hassasiyete yuvarla
+gateio_coin_size = round(gateio_coin_size, round_gate)  # Dinamik hassasiyete yuvarla
 
 # Imza olusturma fonksiyonu
 def gen_sign(method, url, query_string=None, payload_string=None):
