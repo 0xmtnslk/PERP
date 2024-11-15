@@ -3,6 +3,10 @@ import base64
 import json
 import time
 import requests
+import subprocess
+import os
+import math # Tam sayiya yuvarlamak icin math modulunu ekle
+
 
 def get_timestamp():
   return int(time.time() * 1000)
@@ -160,16 +164,16 @@ if __name__ == '__main__':
           
           # Coin boyutunu hesapla
           open_USDT = float(credentials.get("open_USDT", 0))
-          last_price = float(credentials.get("last_price", 0))
-          coin_size = open_USDT * maxLeverage / last_price
+          coin_size = open_USDT * maxLeverage / float(coin_price['last_price'])
 
-        # /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
+          # /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
           with open('/root/gateio/round_gate.txt', 'r') as file:
-          round_gate = int(file.read().strip())  # Dosyadan okunan degerleri tam sayiya cevir
+              round_gate = int(file.read().strip())  # Dosyadan okunan degeri tam sayiya cevir
 
           # Fiyati ve boyutu uygun hassasiyete yuvarla
-          coin_price_long = round(coin_price_long, round_gate)  # Dinamik değişken hassasiyetine yuvarla
-          coin_size = round(coin_size, 0)    # 0 hassasiyetine yuvarla
+          coin_price_long = round(coin_price_long, round_gate)  # Dinamik hassasiyete yuvarla
+          coin_size = math.floor(coin_size) # Degeri asagi yuvarla
+ 
 
           # POST istegi icin imza olusturma
           timestamp = str(get_timestamp())
