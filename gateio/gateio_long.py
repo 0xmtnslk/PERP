@@ -4,6 +4,8 @@ import time
 import hashlib
 import hmac
 import subprocess
+import os
+import math # Tam sayiya yuvarlamak icin math modulunu ekle
 
 host = "https://api.gateio.ws"
 prefix = "/api/v4"
@@ -41,7 +43,7 @@ output_data = {
   "symbol": gateio_symbol,
   "price": gateio_price,
   "leverage": gateio_leverage,
-  "mark_price_round": gateio_mark_price_round  
+  "mark_price_round": gateio_mark_price_round  # Yeni alani ekle
 }
 
 with open('/root/gateio/perp_sorgu.json', 'w') as json_file:
@@ -52,21 +54,21 @@ with open('/root/gateio/perp_sorgu.json', 'r') as json_file:
   perp_data = json.load(json_file)
   gateio_symbol = perp_data['symbol']
   gateio_leverage = perp_data['leverage']
-  gateio_mark_price_round = perp_data['mark_price_round']  
+  gateio_mark_price_round = perp_data['mark_price_round']  # Yeni alani oku
 
-# Coin fiyatini %1 arttir
+# Coin fiyatini %3 arttir
 coin_price_long = gateio_price * 1.03
 
 # Coin boyutunu hesapla
-gateio_coin_size = gateio_open_USDT * gateio_leverage / gateio_price
+gateio_coin_size = gateio_open_USDT * gateio_leverage / gateio_price # Girinti duzeltildi
 
 # /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
 with open('/root/gateio/round_gate.txt', 'r') as file:
-  round_gate = int(file.read().strip())  # Dosyadan okunan degerleri tam sayiya cevir
+  round_gate = int(file.read().strip())  # Dosyadan okunan degeri tam sayiya cevir
 
 # Coin boyutunu uygun hassasiyete yuvarla
 coin_price_long = round(coin_price_long, round_gate)  # Dinamik hassasiyete yuvarla
-gateio_coin_size = round(gateio_coin_size, 0)  # Tam sayıya yuvarla
+gateio_coin_size = math.floor(gateio_coin_size) # Degeri asagi yuvarla
 
 # Imza olusturma fonksiyonu
 def gen_sign(method, url, query_string=None, payload_string=None):
