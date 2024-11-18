@@ -1,8 +1,9 @@
 import json
 import time
 import os
+import requests
 
-# Define the mapping of mark_price_round to round_gate
+# mark_price_round ile round_gate eslesmesini tanimla
 round_gate_mapping = {
   0.1: 1,
   0.01: 2,
@@ -20,57 +21,50 @@ round_gate_mapping = {
   1e-09: 9
 }
 
-# Dosya yollarÄ±
+# Dosya yollari
 secret_file_path = '/root/secret.json'
 bitget_file_path = '/root/PERP/secret.json'
 gateio_file_path = '/root/gateio/secret.json'
+new_coin_file_path = '/root/gateio/new_coin_output.txt'
+round_gate_file_path = '/root/gateio/round_gate.txt'
 
-# Infinite loop to continuously read the JSON file
+# Sonsuz dongu
 while True:
   try:
-      # secret.json dosyasÄ±nÄ± oku ve verileri kopyala
-      with open(secret_file_path, 'r') as file:
-          data = json.load(file)
+      # new_coin_output.txt dosyasindan sembolu oku
+      with open(new_coin_file_path, 'r') as file:
+          round_symbol = file.read().strip()
 
-      # bitget_example verilerini PERP/secret.json dosyasÄ±na yaz
-      bitget_data = data['bitget_example']
-      with open(bitget_file_path, 'w') as file:
-          json.dump({"bitget_example": bitget_data}, file, indent=4)
+      # API'den veri cek
+      api_url = f"https://api.gateio.ws/api/v4/futures/usdt/contracts/{round_symbol}"
+      response = requests.get(api_url)
+      response.raise_for_status()
+      contract_data = response.json()
 
-      # gateio_example verilerini gateio/secret.json dosyasÄ±na yaz
-      gateio_data = data['gateio_example']
-      with open(gateio_file_path, 'w') as file:
-          json.dump({"gateio_example": gateio_data}, file, indent=4)
+      # mark_price_round degerini al
+      gateio_mark_price_round = float(contract_data.get('mark_price_round', 0))
+      print(f"round_symbol: {round_symbol}, mark_price_round: {gateio_mark_price_round}")
 
-      # JSON dosyasÄ±nÄ± oku
-      with open('/root/gateio/perp_sorgu.json', 'r') as json_file:
-          perp_data = json.load(json_file)
-          print(perp_data)  # Print the entire JSON data for debugging
-          gateio_mark_price_round = float(perp_data['mark_price_round'])  # Convert to float
-          print(f"mark_price_round: {gateio_mark_price_round}")  # Print the value
-
-      # Determine the round_gate value
-      rounded_value = round(gateio_mark_price_round, 10)  # Adjust precision as needed
+      # round_gate degerini belirle
+      rounded_value = round(gateio_mark_price_round, 10)
       round_gate = round_gate_mapping.get(rounded_value, None)
 
-      # Check if round_gate is None
-      if round_gate is None:
-          print(f"Warning: No matching round_gate found for mark_price_round: {gateio_mark_price_round}")
-
-      # Write the round_gate value to a file
+      # round_gate degerini dosyaya yaz
       if round_gate is not None:
-          with open('/root/gateio/round_gate.txt', 'w') as file:
+          with open(round_gate_file_path, 'w') as file:
               file.write(str(round_gate))
-
-      # Print the round_gate value
-      print(f"round_gate: {round_gate}")
+          print(f"round_gate: {round_gate}")
+      else:
+          print(f"Uyari: mark_price_round icin eslesen round_gate bulunamadi: {gateio_mark_price_round}")
 
   except FileNotFoundError:
-      print("Error: The specified JSON file was not found.")
+      print("Hata: Belirtilen dosya bulunamadi.")
   except json.JSONDecodeError:
-      print("Error: Failed to decode JSON from the file.")
+      print("Hata: JSON verisi cozulemedi.")
+  except requests.exceptions.RequestException as e:
+      print(f"API hatasi: {e}")
   except Exception as e:
-      print(f"An unexpected error occurred: {e}")
+      print(f"Beklenmeyen bir hata olustu: {e}")
 
-  # Wait for 1 second before the next iteration
+  # Bir sonraki yinelemeden once 1 saniye bekle
   time.sleep(1)
