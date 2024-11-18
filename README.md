@@ -54,7 +54,7 @@ pip install websocket-client
 
 # Çalıştırma
 
-## Bir screen içinde "/root/PERP/upbit_market_tracker.py" çalıştırıyoruz sürekli upbit yeni coin taraması yapacak
+## 1- Bir screen içinde "/root/PERP/upbit_market_tracker.py" çalıştırıyoruz sürekli upbit yeni coin taraması yapacak
 
 ```
 screen -S API_tara
@@ -62,7 +62,34 @@ screen -S API_tara
 ```
 python3 /root/PERP/upbit_market_tracker.py
 ```
-## Bir screen içinde "bitget_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
+
+
+## 2- Bir screen içinde "symbol_gate.py" çalıştırıyoruz bu bizim upbit için tarama yaptığımız işlem çiftini gate.io formatına çevirecek.
+
+```
+screen -S API_gateio_symbol
+```
+```
+python3 /root/gateio/symbol_gate.py
+```
+
+## 3- Bir screen içinde "secret.py" çalıştırıyoruz bunun görevi merkezi "secret.json" dosyasını ilgili jsonlara aktarmak. 
+```
+screen -S API_gateio_round
+```
+```
+python3 /root/secret.py
+```
+
+## 4- Bir screen içinde "round_gate.py" çalıştırıyoruz  gate.io emir girmek için kaç kademeli yuvarlama yapacağını çekip formuluze eder.
+```
+screen -S API_gateio_round
+```
+```
+python3 /root/gateio/round_gate.py
+```
+
+## 5- Bir screen içinde "bitget_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
 
 ```
 screen -S API_bitget
@@ -77,7 +104,7 @@ python3 /root/bitget_perp_order.py
 python3 /root/PERP/kapat.py
 ```
 
-## Bir screen içinde "gateio_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
+## 6- Bir screen içinde "gateio_perp_order.py" çalıştırıyoruz bu bizim otomasyon dosyamız.
 
 ```
 screen -S API_gateio
@@ -93,25 +120,6 @@ python3 /root/gateio/kapat.py
 ```
 
 
-## Bir screen içinde "symbol_gate.py" çalıştırıyoruz bu bizim upbit için tarama yaptığımız işlem çiftini gate.io formatına çevirecek.
-
-```
-screen -S API_gateio_symbol
-```
-```
-python3 /root/gateio/symbol_gate.py
-```
-
-
-## Bir screen içinde "round_gate.py" çalıştırıyoruz bunun 2 görevi var. Birincisi merkezi secret.json dosyasını ilgili jsonlara aktarmak. İkincisi gate.io emir girmek için kaç kademeli yuvarlama yapacağını çekip formuluze eder.
-```
-screen -S API_gateio_round
-```
-```
-python3 /root/gateio/round_gate.py
-```
-
-
 ## Telegram bot için veri aktarmak istediğimiz için Bir screen içinde "telegram_degisken.py" çalıştırıyoruz bu txt uzantılı dosyamızın aynısını json olarak yazar.
 
 ```
@@ -121,4 +129,4 @@ screen -S API_Telegram_json
 python3 /root/telegram_degisken.py
 ```
 
-## Her YEDI python script sürekli çalışır durumda olacak screen içinde çalışacak. ( Not: telegram kısmı devreye alındığında çalışabilir)
+## Her Altı (6) python script sürekli çalışır durumda olacak screen içinde çalışacak. ( Not: telegram kısmı devreye alındığında çalışabilir)
