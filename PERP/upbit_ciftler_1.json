@@ -400,6 +400,11 @@
         "english_name": "Filecoin"
     },
     {
+        "market": "BTC-HOLO",
+        "korean_name": "홀로월드에이아이",
+        "english_name": "Holoworld AI"
+    },
+    {
         "market": "KRW-SHIB",
         "korean_name": "시바이누",
         "english_name": "Shiba Inu"
@@ -1425,6 +1430,11 @@
         "english_name": "Manchester City Fan Token"
     },
     {
+        "market": "USDT-PUMP",
+        "korean_name": "펌프펀",
+        "english_name": "Pump.fun"
+    },
+    {
         "market": "BTC-ID",
         "korean_name": "스페이스아이디",
         "english_name": "SPACE ID"
@@ -1795,6 +1805,11 @@
         "english_name": "The Graph"
     },
     {
+        "market": "KRW-PUMP",
+        "korean_name": "펌프펀",
+        "english_name": "Pump.fun"
+    },
+    {
         "market": "BTC-AFC",
         "korean_name": "아스날",
         "english_name": "Arsenal Fan Token"
@@ -2128,6 +2143,11 @@
         "market": "BTC-PUFFER",
         "korean_name": "퍼퍼",
         "english_name": "Puffer"
+    },
+    {
+        "market": "USDT-HOLO",
+        "korean_name": "홀로월드에이아이",
+        "english_name": "Holoworld AI"
     },
     {
         "market": "USDT-FORT",
@@ -2698,6 +2718,11 @@
         "market": "BTC-HBD",
         "korean_name": "하이브달러",
         "english_name": "Hive Dollar"
+    },
+    {
+        "market": "KRW-HOLO",
+        "korean_name": "홀로월드에이아이",
+        "english_name": "Holoworld AI"
     },
     {
         "market": "BTC-OPEN",
