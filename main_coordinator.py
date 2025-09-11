@@ -100,6 +100,7 @@ class TradingSystemCoordinator:
         scripts = [
             ("Secret Manager", "secret.py", "🔐 API key yönetimi"),
             ("Upbit Monitor", os.path.join("PERP", "upbit_market_tracker.py"), "👀 Upbit yeni coin taraması"),
+            ("Upbit Announcements", "upbit_announcement_scraper.py", "📢 Upbit duyuru sayfası taraması"),
             ("Symbol Converter", os.path.join("gateio", "symbol_gate.py"), "🔄 Gate.io sembol dönüştürme"),
             ("Round Manager", os.path.join("gateio", "round_gate.py"), "⚙️ Gate.io yuvarlama kuralları"),
             ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme")

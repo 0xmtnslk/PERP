@@ -34,14 +34,15 @@ def get_symbol_from_file(file_path):
       print(f"Dosya bulunamadi: {file_path}")
       return None
 
-def load_api_credentials(file_path):
-  try:
-      with open(file_path, 'r') as file:
-          data = json.load(file)
-          return data.get("bitget_example", {})
-  except FileNotFoundError:
-      print(f"Dosya bulunamadi: {file_path}")
-      return {}
+def load_api_credentials():
+    """Environment variable'lardan API bilgilerini al"""
+    return {
+        "api_key": os.getenv("BITGET_API_KEY"),
+        "secret_key": os.getenv("BITGET_SECRET_KEY"), 
+        "passphrase": os.getenv("BITGET_PASSPHRASE"),
+        "open_USDT": os.getenv("BITGET_OPEN_USDT", "1"),
+        "close_yuzde": os.getenv("BITGET_CLOSE_YUZDE", "1.2")
+    }
 
 def get_futures_price(symbol):
   url = f"https://api.bitget.com/api/mix/v1/market/ticker?symbol={symbol}"
@@ -134,12 +135,21 @@ if __name__ == '__main__':
   order_fills_file_path = os.path.join(BASE_DIR, "PERP", "order_fills.json")
   yuzde_file_path = os.path.join(BASE_DIR, "PERP", "yuzde.json")
   
-  # API bilgilerini yukle
-  credentials = load_api_credentials(secret_file_path)
+  # API bilgilerini environment variable'lardan al
+  credentials = load_api_credentials()
   API_KEY = credentials.get("api_key")
   API_SECRET_KEY = credentials.get("secret_key")
   PASS_PHRASE = credentials.get("passphrase")
-  close_yuzde = float(credentials.get("close_yuzde", 0))
+  close_yuzde = float(credentials.get("close_yuzde", 1.2))
+  
+  # API anahtarlarını kontrol et
+  if not all([API_KEY, API_SECRET_KEY, PASS_PHRASE]):
+      print("❌ HATA: Bitget API anahtarları environment variable'larda bulunamadı!")
+      print("📋 Gerekli environment variable'lar:")
+      print("   - BITGET_API_KEY")
+      print("   - BITGET_SECRET_KEY") 
+      print("   - BITGET_PASSPHRASE")
+      exit(1)
 
   # Symbol dosyasindan oku
   symbol = get_symbol_from_file(symbol_file_path)

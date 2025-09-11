@@ -11,16 +11,25 @@ host = "https://api.gateio.ws"
 prefix = "/api/v4"
 headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
-# secret.json dosyasini oku
+# Environment variable'lardan gateio bilgilerini al
 BASE_DIR = os.getcwd()
-with open(os.path.join(BASE_DIR, 'gateio', 'secret.json'), 'r') as file:
-  gateio_secrets = json.load(file)['gateio_example']
 
-# Degiskenleri tanimla
-gateio_api = gateio_secrets['api_key']
-gateio_secret = gateio_secrets['secret_key']
-gateio_open_USDT = float(gateio_secrets['open_USDT'])  # Burada float() ile donusturme yapiliyor
-gateio_initial_symbol = gateio_secrets['initial_symbol']
+# Degiskenleri environment variable'lardan al
+gateio_api = os.getenv('GATEIO_API_KEY')
+gateio_secret = os.getenv('GATEIO_SECRET_KEY')
+gateio_open_USDT = float(os.getenv('GATEIO_OPEN_USDT', '1'))
+gateio_initial_symbol = os.getenv('GATEIO_INITIAL_SYMBOL', 'XLM_USDT')
+
+# API anahtarlarını kontrol et ve type safety sağla
+if not gateio_api or not gateio_secret:
+    print("❌ HATA: Gate.io API anahtarları environment variable'larda bulunamadı!")
+    print("📋 Gerekli environment variable'lar:")
+    print("   - GATEIO_API_KEY")
+    print("   - GATEIO_SECRET_KEY")
+    exit(1)
+
+# Type safety için assert
+assert gateio_api is not None and gateio_secret is not None, "API keys must not be None"
 
 # Yeni sembol dosyasindan oku
 with open(os.path.join(BASE_DIR, 'gateio', 'new_coin_output.txt'), 'r') as file:
