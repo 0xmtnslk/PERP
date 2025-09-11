@@ -19,9 +19,11 @@ def gateio_write_symbol_to_files(gateio_symbol, gateio_json_file_path, gateio_te
       gateio_text_file.write(gateio_symbol)
 
 def main():
-  gateio_input_file_path = '/root/PERP/new_coin_output.txt'
-  gateio_text_file_path = '/root/gateio/new_coin_output.txt'
-  gateio_json_file_path = '/root/gateio/new_coin_output.json'
+  import os
+  BASE_DIR = os.getcwd()
+  gateio_input_file_path = os.path.join(BASE_DIR, 'PERP', 'new_coin_output.txt')
+  gateio_text_file_path = os.path.join(BASE_DIR, 'gateio', 'new_coin_output.txt')
+  gateio_json_file_path = os.path.join(BASE_DIR, 'gateio', 'new_coin_output.json')
   
   while True:
       gateio_symbol = gateio_read_symbol_from_file(gateio_input_file_path)

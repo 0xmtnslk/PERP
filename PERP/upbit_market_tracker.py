@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 # Kullanicinin ev dizininde bir alt dizin olustur
-BASE_DIR = os.path.expanduser("~/PERP/")
+BASE_DIR = os.path.join(os.getcwd(), "PERP")
 
 # Dizinin var olup olmadigini kontrol et, yoksa olustur
 if not os.path.exists(BASE_DIR):

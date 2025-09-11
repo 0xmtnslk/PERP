@@ -4,9 +4,11 @@ import json
 import subprocess
 
 # Dosya yollari
-new_coin_file = "/root/gateio/new_coin_output.txt"
-secret_file = "/root/gateio/secret.json"
-long_script = "/root/gateio/gateio_long.py"
+import os
+BASE_DIR = os.getcwd()
+new_coin_file = os.path.join(BASE_DIR, "gateio", "new_coin_output.txt")
+secret_file = os.path.join(BASE_DIR, "gateio", "secret.json")
+long_script = os.path.join(BASE_DIR, "gateio", "gateio_long.py")
 
 
 # secret.json dosyasini oku

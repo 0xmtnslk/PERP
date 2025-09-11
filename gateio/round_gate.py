@@ -22,11 +22,12 @@ round_gate_mapping = {
 }
 
 # Dosya yollari
-secret_file_path = '/root/secret.json'
-bitget_file_path = '/root/PERP/secret.json'
-gateio_file_path = '/root/gateio/secret.json'
-new_coin_file_path = '/root/gateio/new_coin_output.txt'
-round_gate_file_path = '/root/gateio/round_gate.txt'
+BASE_DIR = os.getcwd()
+secret_file_path = os.path.join(BASE_DIR, 'secret.json')
+bitget_file_path = os.path.join(BASE_DIR, 'PERP', 'secret.json')
+gateio_file_path = os.path.join(BASE_DIR, 'gateio', 'secret.json')
+new_coin_file_path = os.path.join(BASE_DIR, 'gateio', 'new_coin_output.txt')
+round_gate_file_path = os.path.join(BASE_DIR, 'gateio', 'round_gate.txt')
 
 # Sonsuz dongu
 while True:

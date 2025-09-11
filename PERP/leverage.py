@@ -43,7 +43,9 @@ def get_max_leverage(symbol):
   return None
 
 # API bilgilerini yukle
-credentials = load_api_credentials("/root/PERP/secret.json")
+import os
+BASE_DIR = os.getcwd()
+credentials = load_api_credentials(os.path.join(BASE_DIR, "PERP", "secret.json"))
 api_key = credentials.get("api_key")
 secret_key = credentials.get("secret_key")
 passphrase = credentials.get("passphrase")
@@ -52,7 +54,7 @@ passphrase = credentials.get("passphrase")
 timestamp = str(int(time.time() * 1000))
 
 # Symbol dosyasinin yolu
-file_path = "/root/PERP/new_coin_output.txt"
+file_path = os.path.join(BASE_DIR, "PERP", "new_coin_output.txt")
 symbol = get_symbol_from_file(file_path)
 
 if symbol and api_key and secret_key and passphrase:

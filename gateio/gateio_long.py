@@ -12,7 +12,8 @@ prefix = "/api/v4"
 headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 # secret.json dosyasini oku
-with open('/root/gateio/secret.json', 'r') as file:
+BASE_DIR = os.getcwd()
+with open(os.path.join(BASE_DIR, 'gateio', 'secret.json'), 'r') as file:
   gateio_secrets = json.load(file)['gateio_example']
 
 # Degiskenleri tanimla
@@ -22,7 +23,7 @@ gateio_open_USDT = float(gateio_secrets['open_USDT'])  # Burada float() ile donu
 gateio_initial_symbol = gateio_secrets['initial_symbol']
 
 # Yeni sembol dosyasindan oku
-with open('/root/gateio/new_coin_output.txt', 'r') as file:
+with open(os.path.join(BASE_DIR, 'gateio', 'new_coin_output.txt'), 'r') as file:
   gateio_symbol = file.read().strip()
 
 # API istegi yap
@@ -46,11 +47,11 @@ output_data = {
   "mark_price_round": gateio_mark_price_round  # Yeni alani ekle
 }
 
-with open('/root/gateio/perp_sorgu.json', 'w') as json_file:
+with open(os.path.join(BASE_DIR, 'gateio', 'perp_sorgu.json'), 'w') as json_file:
   json.dump(output_data, json_file, indent=4)
 
-# /root/gateio/perp_sorgu.json dosyasindan verileri oku
-with open('/root/gateio/perp_sorgu.json', 'r') as json_file:
+# gateio/perp_sorgu.json dosyasindan verileri oku
+with open(os.path.join(BASE_DIR, 'gateio', 'perp_sorgu.json'), 'r') as json_file:
   perp_data = json.load(json_file)
   gateio_symbol = perp_data['symbol']
   gateio_leverage = perp_data['leverage']
@@ -62,8 +63,8 @@ coin_price_long = gateio_price * 1.03
 # Coin boyutunu hesapla
 gateio_coin_size = gateio_open_USDT * gateio_leverage / gateio_price # Girinti duzeltildi
 
-# /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
-with open('/root/gateio/round_gate.txt', 'r') as file:
+# gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
+with open(os.path.join(BASE_DIR, 'gateio', 'round_gate.txt'), 'r') as file:
   round_gate = int(file.read().strip())  # Dosyadan okunan degeri tam sayiya cevir
 
 # Coin boyutunu uygun hassasiyete yuvarla
@@ -101,7 +102,7 @@ order_response = r.json()
 print(order_response)
 
 # "order check" kismi
-with open('/root/gateio/order_gateio.json', 'w') as json_file:
+with open(os.path.join(BASE_DIR, 'gateio', 'order_gateio.json'), 'w') as json_file:
   json.dump(order_response, json_file, indent=4)
 
 # Dinamik degiskenleri ata ve yazdir
@@ -118,7 +119,7 @@ print(f"{gate_id} {gate_contrat} {gate_fill_price} {gate_size} {gate_finish_as}"
 
 # "order check" dongusu
 while True:
-  with open('/root/gateio/order_gateio.json', 'r') as json_file:
+  with open(os.path.join(BASE_DIR, 'gateio', 'order_gateio.json'), 'r') as json_file:
       order_data = json.load(json_file)
       gate_finish_as = order_data.get('finish_as')
       gate_label = order_data.get('label', '')
@@ -128,7 +129,7 @@ while True:
       continue  # En basa don
 
   if gate_finish_as != "filled":
-      subprocess.run(["python3", "/root/gateio/kapat.py"])
+      subprocess.run(["python3", os.path.join(BASE_DIR, "gateio", "kapat.py")])
       time.sleep(0.5)
       continue  # En basa don
 
@@ -149,7 +150,7 @@ while True:
           "leverage_max": data['leverage_max']
       }
 
-      with open('/root/gateio/newprice_gateio.json', 'w') as json_file:
+      with open(os.path.join(BASE_DIR, 'gateio', 'newprice_gateio.json'), 'w') as json_file:
           json.dump(new_price_data, json_file, indent=4)
 
       # Yuzde hesapla
@@ -161,17 +162,17 @@ while True:
           "yuzde": yuzde
       }
 
-      with open('/root/gateio/yuzde.json', 'w') as json_file:
+      with open(os.path.join(BASE_DIR, 'gateio', 'yuzde.json'), 'w') as json_file:
           json.dump(yuzde_data, json_file, indent=4)
 
       # "close_yuzde" degerini oku
-      with open('/root/gateio/secret.json', 'r') as file:
+      with open(os.path.join(BASE_DIR, 'gateio', 'secret.json'), 'r') as file:
           perp_secrets = json.load(file)
           close_yuzde = float(perp_secrets['gateio_example']['close_yuzde'])
 
       # Yuzde degerini karsilastir
       if yuzde >= close_yuzde:
-          subprocess.run(["python3", "/root/gateio/kapat.py"])
+          subprocess.run(["python3", os.path.join(BASE_DIR, "gateio", "kapat.py")])
           break  # Hedef gerceklesti, donguden cik
 
       # Hedef gerceklesmedi, 1 saniye bekle ve tekrar dene

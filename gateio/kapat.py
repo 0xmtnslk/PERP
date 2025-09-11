@@ -9,7 +9,9 @@ prefix = "/api/v4"
 headers = {'Accept': 'application/json', 'Content-Type': 'application/json'}
 
 # secret.json dosyasini oku
-with open('/root/gateio/secret.json', 'r') as file:
+import os
+BASE_DIR = os.getcwd()
+with open(os.path.join(BASE_DIR, 'gateio', 'secret.json'), 'r') as file:
   gateio_secrets = json.load(file)['gateio_example']
 
 # Degiskenleri tanimla
@@ -17,7 +19,7 @@ gateio_api = gateio_secrets['api_key']
 gateio_secret = gateio_secrets['secret_key']
 
 # order_gateio.json dosyasindan bilgileri oku
-with open('/root/gateio/order_gateio.json', 'r') as f:
+with open(os.path.join(BASE_DIR, 'gateio', 'order_gateio.json'), 'r') as f:
   order_data = json.load(f)
   gate_contract = order_data['contract']
   gate_id = order_data['id']

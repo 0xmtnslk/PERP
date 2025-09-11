@@ -4,10 +4,12 @@ import json
 import subprocess
 
 # Dosya yollari
-new_coin_file = "/root/PERP/new_coin_output.txt"
-secret_file = "/root/PERP/secret.json"
-long_script = "/root/PERP/long.py"
-leverage_script = "/root/PERP/leverage.py"  # leverage.py dosyasinin yolunu ekledim
+import os
+BASE_DIR = os.getcwd()
+new_coin_file = os.path.join(BASE_DIR, "PERP", "new_coin_output.txt")
+secret_file = os.path.join(BASE_DIR, "PERP", "secret.json")
+long_script = os.path.join(BASE_DIR, "PERP", "long.py")
+leverage_script = os.path.join(BASE_DIR, "PERP", "leverage.py")
 
 # secret.json dosyasini oku
 with open(secret_file, 'r') as f:

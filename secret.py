@@ -2,9 +2,11 @@ import json
 import time
 
 # Dosya yollarini tanimla
-secret_file_path = '/root/secret.json'
-bitget_file_path = '/root/PERP/secret.json'
-gateio_file_path = '/root/gateio/secret.json'
+import os
+BASE_DIR = os.getcwd()
+secret_file_path = os.path.join(BASE_DIR, 'secret.json')
+bitget_file_path = os.path.join(BASE_DIR, 'PERP', 'secret.json')
+gateio_file_path = os.path.join(BASE_DIR, 'gateio', 'secret.json')
 
 # Sonsuz dongu
 while True:

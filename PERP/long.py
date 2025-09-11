@@ -127,11 +127,12 @@ def get_max_leverage(symbol):
 
 if __name__ == '__main__':
   # Dosya yollarini tanimla
-  secret_file_path = "/root/PERP/secret.json"
-  symbol_file_path = "/root/PERP/new_coin_output.txt"
-  order_id_file_path = "/root/PERP/order_id.json"
-  order_fills_file_path = "/root/PERP/order_fills.json"
-  yuzde_file_path = "/root/PERP/yuzde.json"
+  BASE_DIR = os.getcwd()
+  secret_file_path = os.path.join(BASE_DIR, "PERP", "secret.json")
+  symbol_file_path = os.path.join(BASE_DIR, "PERP", "new_coin_output.txt")
+  order_id_file_path = os.path.join(BASE_DIR, "PERP", "order_id.json")
+  order_fills_file_path = os.path.join(BASE_DIR, "PERP", "order_fills.json")
+  yuzde_file_path = os.path.join(BASE_DIR, "PERP", "yuzde.json")
   
   # API bilgilerini yukle
   credentials = load_api_credentials(secret_file_path)
@@ -166,8 +167,8 @@ if __name__ == '__main__':
           open_USDT = float(credentials.get("open_USDT", 0))
           coin_size = open_USDT * maxLeverage / float(coin_price['last_price'])
 
-          # /root/gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
-          with open('/root/gateio/round_gate.txt', 'r') as file:
+          # gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
+          with open(os.path.join(BASE_DIR, 'gateio', 'round_gate.txt'), 'r') as file:
               round_gate = int(file.read().strip())  # Dosyadan okunan degeri tam sayiya cevir
 
           # Fiyati ve boyutu uygun hassasiyete yuvarla

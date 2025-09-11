@@ -10,8 +10,10 @@ def write_symbol_to_json(symbol, json_file_path):
         json.dump({"symbol": symbol}, json_file)
 
 def main():
-    text_file_path = '/root/PERP/new_coin_output.txt'
-    json_file_path = '/root/PERP/new_coin_output.json'
+    import os
+    BASE_DIR = os.getcwd()
+    text_file_path = os.path.join(BASE_DIR, 'PERP', 'new_coin_output.txt')
+    json_file_path = os.path.join(BASE_DIR, 'PERP', 'new_coin_output.json')
     
     while True:
         symbol = read_symbol_from_file(text_file_path)

@@ -62,7 +62,9 @@ def load_api_credentials(file_path):
       return None, None, None
 
 if __name__ == '__main__':
-  secret_file_path = "/root/PERP/secret.json"
+  import os
+  BASE_DIR = os.getcwd()
+  secret_file_path = os.path.join(BASE_DIR, "PERP", "secret.json")
   API_KEY, API_SECRET_KEY, PASS_PHRASE = load_api_credentials(secret_file_path)
 
   if API_KEY and API_SECRET_KEY and PASS_PHRASE:
