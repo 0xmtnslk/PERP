@@ -4,9 +4,11 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "beautifulsoup4>=4.13.5",
     "bitget-python-connector>=0.0.7",
     "gate-api>=6.104.3",
     "python-bitget>=1.0.8",
+    "python-telegram-bot>=22.3",
     "requests>=2.32.5",
     "websocket-client>=1.8.0",
 ]

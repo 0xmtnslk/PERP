@@ -1,0 +1,264 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Ana Koordinatör Script - Tüm ticaret bileşenlerini yönetir
+Bu script tüm gerekli alt scriptleri başlatır ve yönetir
+"""
+import os
+import json
+import time
+import signal
+import sys
+import subprocess
+import threading
+from datetime import datetime
+
+class TradingSystemCoordinator:
+    def __init__(self):
+        self.BASE_DIR = os.getcwd()
+        self.processes = {}
+        self.running = False
+        
+        # Temel dosya kontrolleri
+        self.setup_directories()
+        self.check_secret_files()
+        
+        # Sinyal yakalayıcıları
+        signal.signal(signal.SIGINT, self.signal_handler)
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        
+    def setup_directories(self):
+        """Gerekli dizinleri oluştur"""
+        directories = ['PERP', 'gateio']
+        for dir_name in directories:
+            dir_path = os.path.join(self.BASE_DIR, dir_name)
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+                print(f"📁 {dir_name} dizini oluşturuldu")
+    
+    def check_secret_files(self):
+        """Secret dosyalarını kontrol et ve oluştur"""
+        # Ana secret.json kontrol
+        main_secret = os.path.join(self.BASE_DIR, "secret.json")
+        if not os.path.exists(main_secret):
+            # Örnek secret dosyası oluştur
+            default_config = {
+                "bitget_example": {
+                    "api_key": "",
+                    "secret_key": "",
+                    "passphrase": "",
+                    "open_USDT": "1",
+                    "close_yuzde": "1.2",
+                    "initial_symbol": "XLMUSDT_UMCBL"
+                },
+                "gateio_example": {
+                    "api_key": "",
+                    "secret_key": "",
+                    "open_USDT": "1",
+                    "close_yuzde": 1.2,
+                    "initial_symbol": "XLM_USDT"
+                }
+            }
+            with open(main_secret, 'w') as f:
+                json.dump(default_config, f, indent=4)
+            print("🔑 Varsayılan secret.json oluşturuldu")
+        
+        # Alt dizin secret dosyalarını kontrol et
+        perp_secret = os.path.join(self.BASE_DIR, "PERP", "secret.json")
+        gateio_secret = os.path.join(self.BASE_DIR, "gateio", "secret.json")
+        
+        if not os.path.exists(perp_secret):
+            with open(perp_secret, 'w') as f:
+                json.dump({"bitget_example": {}}, f, indent=4)
+                
+        if not os.path.exists(gateio_secret):
+            with open(gateio_secret, 'w') as f:
+                json.dump({"gateio_example": {}}, f, indent=4)
+    
+    def start_script(self, script_name, script_path):
+        """Bir script başlat"""
+        try:
+            print(f"🚀 {script_name} başlatılıyor...")
+            process = subprocess.Popen(
+                ["python3", script_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                cwd=self.BASE_DIR
+            )
+            self.processes[script_name] = process
+            print(f"✅ {script_name} başlatıldı (PID: {process.pid})")
+            return True
+        except Exception as e:
+            print(f"❌ {script_name} başlatma hatası: {e}")
+            return False
+    
+    def start_all_components(self):
+        """Tüm sistem bileşenlerini başlat"""
+        print("🎯 Kripto Ticaret Sistemi başlatılıyor...\n")
+        
+        # Script listesi ve açıklamaları
+        scripts = [
+            ("Secret Manager", "secret.py", "🔐 API key yönetimi"),
+            ("Upbit Monitor", os.path.join("PERP", "upbit_market_tracker.py"), "👀 Upbit yeni coin taraması"),
+            ("Symbol Converter", os.path.join("gateio", "symbol_gate.py"), "🔄 Gate.io sembol dönüştürme"),
+            ("Round Manager", os.path.join("gateio", "round_gate.py"), "⚙️ Gate.io yuvarlama kuralları"),
+            ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme")
+        ]
+        
+        success_count = 0
+        for script_name, script_path, description in scripts:
+            full_path = os.path.join(self.BASE_DIR, script_path)
+            if os.path.exists(full_path):
+                print(f"{description}")
+                if self.start_script(script_name, full_path):
+                    success_count += 1
+                time.sleep(2)  # Scriptler arası bekleme
+            else:
+                print(f"⚠️ {script_path} bulunamadı, atlanıyor...")
+        
+        print(f"\n📊 {success_count}/{len(scripts)} bileşen başarıyla başlatıldı")
+        
+        # Ana ticaret scriptlerini daha sonra başlat (API keyler gerekli)
+        print("\n⚠️ Ana ticaret scriptleri API anahtarları girildikten sonra başlatılacak:")
+        print("   - bitget_perp_order.py (Bitget otomasyonu)")
+        print("   - gateio_perp_order.py (Gate.io otomasyonu)")
+        
+    def monitor_processes(self):
+        """İşlemleri izle ve yeniden başlat"""
+        while self.running:
+            for script_name, process in list(self.processes.items()):
+                if process.poll() is not None:  # İşlem bitmiş
+                    print(f"⚠️ {script_name} durdu, yeniden başlatılıyor...")
+                    # İşlemi yeniden başlatmaya çalış
+                    del self.processes[script_name]
+            
+            time.sleep(10)  # 10 saniyede bir kontrol
+    
+    def check_api_keys(self):
+        """API anahtarlarını kontrol et"""
+        try:
+            with open(os.path.join(self.BASE_DIR, "secret.json"), 'r') as f:
+                config = json.load(f)
+            
+            bitget_keys = config.get("bitget_example", {})
+            gateio_keys = config.get("gateio_example", {})
+            
+            bitget_ready = all([
+                bitget_keys.get("api_key"),
+                bitget_keys.get("secret_key"), 
+                bitget_keys.get("passphrase")
+            ])
+            
+            gateio_ready = all([
+                gateio_keys.get("api_key"),
+                gateio_keys.get("secret_key")
+            ])
+            
+            return bitget_ready, gateio_ready
+            
+        except Exception as e:
+            print(f"❌ API key kontrol hatası: {e}")
+            return False, False
+    
+    def start_trading_scripts(self):
+        """Ana ticaret scriptlerini başlat"""
+        bitget_ready, gateio_ready = self.check_api_keys()
+        
+        if bitget_ready:
+            print("🟢 Bitget API anahtarları tamam, otomasyon başlatılıyor...")
+            self.start_script("Bitget Trading", "bitget_perp_order.py")
+        else:
+            print("🔴 Bitget API anahtarları eksik")
+            
+        if gateio_ready:
+            print("🟢 Gate.io API anahtarları tamam, otomasyon başlatılıyor...")
+            self.start_script("GateIO Trading", "gateio_perp_order.py")
+        else:
+            print("🔴 Gate.io API anahtarları eksik")
+    
+    def signal_handler(self, signum, frame):
+        """Sinyal yakalayıcı"""
+        print(f"\n🛑 Sinyal alındı ({signum}), sistem güvenli şekilde kapatılıyor...")
+        self.stop_all()
+        sys.exit(0)
+    
+    def stop_all(self):
+        """Tüm işlemleri durdur"""
+        self.running = False
+        print("🛑 Tüm işlemler durduruluyor...")
+        
+        for script_name, process in self.processes.items():
+            try:
+                process.terminate()
+                process.wait(timeout=5)
+                print(f"✅ {script_name} durduruldu")
+            except subprocess.TimeoutExpired:
+                process.kill()
+                print(f"⚠️ {script_name} zorla sonlandırıldı")
+            except Exception as e:
+                print(f"❌ {script_name} durdurma hatası: {e}")
+        
+        self.processes.clear()
+    
+    def status_report(self):
+        """Durum raporu"""
+        while self.running:
+            active_count = len([p for p in self.processes.values() if p.poll() is None])
+            print(f"📊 Sistem Durumu: {active_count}/{len(self.processes)} aktif script")
+            
+            # API key durumu
+            bitget_ready, gateio_ready = self.check_api_keys()
+            print(f"🔑 API Durumu: Bitget {'✅' if bitget_ready else '❌'} | Gate.io {'✅' if gateio_ready else '❌'}")
+            
+            time.sleep(30)  # 30 saniyede bir rapor
+    
+    def run(self):
+        """Ana çalışma fonksiyonu"""
+        try:
+            self.running = True
+            print("=" * 60)
+            print("🤖 KRIPTO TICARET SISTEMI KOORDINATÖRÜ")
+            print("=" * 60)
+            print(f"📅 Başlatılma: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            print(f"📁 Çalışma Dizini: {self.BASE_DIR}\n")
+            
+            # Sistem bileşenlerini başlat
+            self.start_all_components()
+            
+            # API anahtarlarını kontrol et ve ana scriptleri başlat
+            print("\n🔍 API anahtarları kontrol ediliyor...")
+            time.sleep(5)
+            self.start_trading_scripts()
+            
+            # Monitoring thread'leri başlat
+            monitor_thread = threading.Thread(target=self.monitor_processes)
+            status_thread = threading.Thread(target=self.status_report)
+            
+            monitor_thread.daemon = True
+            status_thread.daemon = True
+            
+            monitor_thread.start()
+            status_thread.start()
+            
+            print("\n🎯 Sistem çalışıyor! Durdurmak için Ctrl+C")
+            print("=" * 60)
+            
+            # Ana döngü
+            while self.running:
+                time.sleep(1)
+                
+        except KeyboardInterrupt:
+            print("\n⚠️ Kullanıcı tarafından durduruldu")
+        except Exception as e:
+            print(f"\n❌ Kritik hata: {e}")
+        finally:
+            self.stop_all()
+            print("👋 Sistem kapatıldı")
+
+def main():
+    """Ana fonksiyon"""
+    coordinator = TradingSystemCoordinator()
+    coordinator.run()
+
+if __name__ == "__main__":
+    main()
