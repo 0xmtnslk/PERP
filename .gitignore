@@ -1,0 +1,49 @@
+# Environment variables
+.env
+*.env
+
+# API Keys and secrets
+secret.json
+PERP/secret.json
+gateio/secret.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+trading_bot.db
+
+# Logs
+logs/
+*.log
+
+# Cache and temporary
+__pycache__/
+*.pyc
+*.pyo
+.cache/
+*.tmp
+temp/
+
+# Virtual environment
+venv/
+env/
+
+# OS and IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Output files (will be created dynamically)
+PERP/new_coin_output.txt
+PERP/order_*.json
+PERP/processed_coins.json
+PERP/last_announcement_check.json
+ipc_queues/
+telegram_notifications.json
+
+# Chrome driver
+chromedriver*
