@@ -268,30 +268,32 @@ if __name__ == '__main__':
           coin_info = get_futures_price(symbol)
           if coin_info:
               print(f"Son Fiyat: {coin_info['last_price']}")
+              
+              # Yuzde hesaplama
+              yuzde = round(float(coin_info['last_price']) / fills_price, 3)
 
-          # Yuzde hesaplama
-          yuzde = round(float(coin_info['last_price']) / fills_price, 3)
-
-          # Yuzdeyi dosyaya kaydet
-          timestamp = get_timestamp()
-          with open(yuzde_file_path, 'w') as file:
-              json.dump({"timestamp": timestamp, "yuzde": yuzde}, file)
-          
-          # Yuzdeyi close_yuzde ile karsilastir
-          if yuzde >= close_yuzde:
-              print("Hedef gerceklesti, pozisyon kapatiliyor...")
-              close_all_positions(API_KEY, API_SECRET_KEY, PASS_PHRASE)
+              # Yuzdeyi dosyaya kaydet
+              timestamp = get_timestamp()
+              with open(yuzde_file_path, 'w') as file:
+                  json.dump({"timestamp": timestamp, "yuzde": yuzde}, file)
+              
+              # Yuzdeyi close_yuzde ile karsilastir
+              if yuzde >= close_yuzde:
+                  print("Hedef gerceklesti, pozisyon kapatiliyor...")
+                  close_all_positions(API_KEY, API_SECRET_KEY, PASS_PHRASE)
+              else:
+                  while True:
+                      time.sleep(1)  # 1 saniye bekle
+                      coin_info = get_futures_price(symbol)
+                      if coin_info:
+                          print(f"Son Fiyat: {coin_info['last_price']}")
+                          yuzde = round(float(coin_info['last_price']) / fills_price, 3)
+                          if yuzde >= close_yuzde:
+                              print("Hedef gerceklesti, pozisyon kapatiliyor...")
+                              close_all_positions(API_KEY, API_SECRET_KEY, PASS_PHRASE)
+                              break
           else:
-              while True:
-                  time.sleep(1)  # 1 saniye bekle
-                  coin_info = get_futures_price(symbol)
-                  if coin_info:
-                      print(f"Son Fiyat: {coin_info['last_price']}")
-                      yuzde = round(float(coin_info['last_price']) / fills_price, 3)
-                      if yuzde >= close_yuzde:
-                          print("Hedef gerceklesti, pozisyon kapatiliyor...")
-                          close_all_positions(API_KEY, API_SECRET_KEY, PASS_PHRASE)
-                          break
+              print("Coin fiyat bilgisi alinamadi.")
       else:
           print("Coin fiyati alinamadi.")
   else:
