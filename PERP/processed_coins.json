@@ -1,0 +1,14 @@
+[
+  {
+    "symbol": "PUMP",
+    "title": "Market Support for PUMP",
+    "perp_symbol": "PUMPUSDT_UMCBL",
+    "processed_at": "2025-09-11T14:34:59.146618"
+  },
+  {
+    "symbol": "HOLO",
+    "title": "Market Support for HOLO",
+    "perp_symbol": "HOLOUSDT_UMCBL",
+    "processed_at": "2025-09-11T14:34:59.147957"
+  }
+]

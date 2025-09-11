@@ -488,14 +488,14 @@ class UpbitAnnouncementScraper:
                                         
                                         # Kayıt dosyasına da ekle
                                         coin_data = [{
-                                            'symbols': symbols,
-                                            'title': announcement['title'],
-                                            'date': announcement['date'],
-                                            'link': announcement['link'],
-                                            'detection_time': datetime.now().isoformat(),
-                                            'triggered': True
-                                        }]
-                                        self.save_new_coins(coin_data)
+                                        'symbols': symbols,
+                                        'title': announcement['title'],
+                                        'date': announcement['date'],
+                                        'link': announcement['link'],
+                                        'detection_time': datetime.now().isoformat(),
+                                        'triggered': True
+                                    }]
+                                    self.save_new_coins(coin_data)
                                     
                                     # Telegram bot için bildirim dosyası oluştur
                                     notification_data = {
