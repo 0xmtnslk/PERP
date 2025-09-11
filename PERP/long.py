@@ -177,9 +177,8 @@ if __name__ == '__main__':
           open_USDT = float(credentials.get("open_USDT", 0))
           coin_size = open_USDT * maxLeverage / float(coin_price['last_price'])
 
-          # gateio/round_gate.txt dosyasindan yuvarlama hassasiyetini oku
-          with open(os.path.join(BASE_DIR, 'gateio', 'round_gate.txt'), 'r') as file:
-              round_gate = int(file.read().strip())  # Dosyadan okunan degeri tam sayiya cevir
+          # Yuvarlama hassasiyetini sabit değer olarak kullan (Gate.io bağımlılığı kaldırıldı)
+          round_gate = 4  # Varsayılan hassasiyet değeri
 
           # Fiyati ve boyutu uygun hassasiyete yuvarla
           coin_price_long = round(coin_price_long, round_gate)  # Dinamik hassasiyete yuvarla

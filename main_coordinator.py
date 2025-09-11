@@ -96,13 +96,11 @@ class TradingSystemCoordinator:
         """Tüm sistem bileşenlerini başlat"""
         print("🎯 Kripto Ticaret Sistemi başlatılıyor...\n")
         
-        # Script listesi ve açıklamaları
+        # Script listesi ve açıklamaları (Sadece Bitget için optimize edildi)
         scripts = [
             ("Secret Manager", "secret.py", "🔐 API key yönetimi"),
             ("Upbit Monitor", os.path.join("PERP", "upbit_market_tracker.py"), "👀 Upbit yeni coin taraması"),
             ("Upbit Announcements", "upbit_announcement_scraper.py", "📢 Upbit duyuru sayfası taraması"),
-            ("Symbol Converter", os.path.join("gateio", "symbol_gate.py"), "🔄 Gate.io sembol dönüştürme"),
-            ("Round Manager", os.path.join("gateio", "round_gate.py"), "⚙️ Gate.io yuvarlama kuralları"),
             ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme")
         ]
         
@@ -120,9 +118,9 @@ class TradingSystemCoordinator:
         print(f"\n📊 {success_count}/{len(scripts)} bileşen başarıyla başlatıldı")
         
         # Ana ticaret scriptlerini daha sonra başlat (API keyler gerekli)
-        print("\n⚠️ Ana ticaret scriptleri API anahtarları girildikten sonra başlatılacak:")
+        print("\n⚠️ Ana ticaret scripti API anahtarları girildikten sonra başlatılacak:")
         print("   - bitget_perp_order.py (Bitget otomasyonu)")
-        print("   - gateio_perp_order.py (Gate.io otomasyonu)")
+        print("\n🔒 Gate.io bileşenleri pasife alındı (isteğe bağlı olarak aktifleştirilebilir)")
         
     def monitor_processes(self):
         """İşlemleri izle ve yeniden başlat"""
@@ -136,46 +134,30 @@ class TradingSystemCoordinator:
             time.sleep(10)  # 10 saniyede bir kontrol
     
     def check_api_keys(self):
-        """API anahtarlarını kontrol et"""
+        """API anahtarlarını kontrol et (Sadece Bitget)"""
         try:
-            with open(os.path.join(self.BASE_DIR, "secret.json"), 'r') as f:
-                config = json.load(f)
-            
-            bitget_keys = config.get("bitget_example", {})
-            gateio_keys = config.get("gateio_example", {})
-            
+            # Environment variable'lardan kontrol et
             bitget_ready = all([
-                bitget_keys.get("api_key"),
-                bitget_keys.get("secret_key"), 
-                bitget_keys.get("passphrase")
+                os.getenv("BITGET_API_KEY"),
+                os.getenv("BITGET_SECRET_KEY"),
+                os.getenv("BITGET_PASSPHRASE")
             ])
             
-            gateio_ready = all([
-                gateio_keys.get("api_key"),
-                gateio_keys.get("secret_key")
-            ])
-            
-            return bitget_ready, gateio_ready
+            return bitget_ready
             
         except Exception as e:
             print(f"❌ API key kontrol hatası: {e}")
-            return False, False
+            return False
     
     def start_trading_scripts(self):
-        """Ana ticaret scriptlerini başlat"""
-        bitget_ready, gateio_ready = self.check_api_keys()
+        """Ana ticaret scriptini başlat (Sadece Bitget)"""
+        bitget_ready = self.check_api_keys()
         
         if bitget_ready:
             print("🟢 Bitget API anahtarları tamam, otomasyon başlatılıyor...")
             self.start_script("Bitget Trading", "bitget_perp_order.py")
         else:
             print("🔴 Bitget API anahtarları eksik")
-            
-        if gateio_ready:
-            print("🟢 Gate.io API anahtarları tamam, otomasyon başlatılıyor...")
-            self.start_script("GateIO Trading", "gateio_perp_order.py")
-        else:
-            print("🔴 Gate.io API anahtarları eksik")
     
     def signal_handler(self, signum, frame):
         """Sinyal yakalayıcı"""
@@ -207,9 +189,9 @@ class TradingSystemCoordinator:
             active_count = len([p for p in self.processes.values() if p.poll() is None])
             print(f"📊 Sistem Durumu: {active_count}/{len(self.processes)} aktif script")
             
-            # API key durumu
-            bitget_ready, gateio_ready = self.check_api_keys()
-            print(f"🔑 API Durumu: Bitget {'✅' if bitget_ready else '❌'} | Gate.io {'✅' if gateio_ready else '❌'}")
+            # API key durumu (Sadece Bitget)
+            bitget_ready = self.check_api_keys()
+            print(f"🔑 API Durumu: Bitget {'✅' if bitget_ready else '❌'}")
             
             time.sleep(30)  # 30 saniyede bir rapor
     
