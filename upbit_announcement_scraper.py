@@ -93,34 +93,72 @@ class UpbitAnnouncementScraper:
             return []
     
     def extract_coin_symbols(self, title, announcement_text=""):
-        """Duyuru başlığından coin sembollerini çıkar"""
+        """Duyuru başlığından coin sembollerini çıkar - özellikle parantez içindeki sembolleri"""
         symbols = []
         
-        # Yaygın coin sembolleri pattern'i
-        coin_pattern = r'\b([A-Z]{3,8})\b'
+        # ÖNCELİK: Parantez içindeki semboller (Linea(LINEA) formatı)
+        parenthesis_pattern = r'\(([A-Z]{2,10})\)'
+        parenthesis_symbols = re.findall(parenthesis_pattern, title)
         
-        # Başlık ve metinleri birleştir
-        full_text = f"{title} {announcement_text}".upper()
+        print(f"🔍 Parantez içi arama: '{title}' -> Bulunan: {parenthesis_symbols}")
         
-        # Coin sembollerini bul
-        potential_symbols = re.findall(coin_pattern, full_text)
-        
-        # Filtreleme - yaygın olmayan kelimeleri çıkar
-        exclude_words = {
-            'UPBIT', 'KRW', 'BTC', 'ETH', 'USDT', 'API', 'NEW', 'THE', 'AND', 'FOR', 'WITH',
-            'FROM', 'MARKET', 'TRADING', 'SERVICE', 'NOTICE', 'UPDATE', 'SYSTEM'
-        }
-        
-        for symbol in potential_symbols:
-            if symbol not in exclude_words and len(symbol) >= 3:
+        # Parantez içi sembolleri ekle
+        for symbol in parenthesis_symbols:
+            if len(symbol) >= 2 and symbol not in ['KRW', 'BTC', 'USDT', 'ETH']:
                 symbols.append(symbol)
+                print(f"✅ Parantez içi sembol eklendi: {symbol}")
         
-        return list(set(symbols))  # Duplicateları kaldır
+        # YEDEK: Normal pattern matching (parantez içi bulunamazsa)
+        if not symbols:
+            # Market Support pattern'i için özel regex
+            market_support_pattern = r'Market Support for\s+(\w+)'
+            market_symbols = re.findall(market_support_pattern, title, re.IGNORECASE)
+            
+            for symbol in market_symbols:
+                if symbol.upper() not in ['MARKET', 'SUPPORT', 'FOR', 'UPDATE', 'KRW', 'BTC', 'USDT']:
+                    symbols.append(symbol.upper())
+                    print(f"✅ Market Support sembol eklendi: {symbol.upper()}")
+        
+        # Son çare: Genel coin pattern'i
+        if not symbols:
+            general_pattern = r'\b([A-Z]{3,8})\b'
+            potential_symbols = re.findall(general_pattern, title.upper())
+            
+            exclude_words = {
+                'UPBIT', 'KRW', 'BTC', 'ETH', 'USDT', 'API', 'NEW', 'THE', 'AND', 'FOR', 'WITH',
+                'FROM', 'MARKET', 'TRADING', 'SERVICE', 'NOTICE', 'UPDATE', 'SYSTEM', 'SUPPORT'
+            }
+            
+            for symbol in potential_symbols:
+                if symbol not in exclude_words and len(symbol) >= 3:
+                    symbols.append(symbol)
+        
+        unique_symbols = list(set(symbols))
+        print(f"🎯 Final semboller: {unique_symbols}")
+        return unique_symbols
     
     def is_new_coin_announcement(self, title):
         """Duyurunun yeni coin listeleme duyurusu olup olmadığını kontrol et"""
         title_lower = title.lower()
         
+        # Spesifik Upbit pattern'leri
+        upbit_patterns = [
+            r'market support for.*\(.*market\)',  # Market Support for Linea(LINEA) (KRW, BTC, USDT Market)
+            r'신규.*상장',  # 신규 상장  
+            r'원화.*마켓.*추가',  # 원화 마켓 추가
+            r'usdt.*마켓.*추가',  # USDT 마켓 추가
+            r'new.*listing',  # new listing
+            r'market.*launch',  # market launch
+            r'trading.*support.*market',  # trading support market
+        ]
+        
+        # Önce spesifik pattern'leri kontrol et
+        for pattern in upbit_patterns:
+            if re.search(pattern, title_lower, re.IGNORECASE):
+                print(f"✅ Yeni coin pattern bulundu: '{pattern}' -> '{title}'")
+                return True
+        
+        # Eski pattern'leri de kontrol et
         for pattern in self.new_coin_patterns:
             if re.search(pattern, title_lower, re.IGNORECASE):
                 return True
@@ -220,9 +258,13 @@ class UpbitAnnouncementScraper:
         return new_coins
     
     def run_continuous(self):
-        """Sürekli tarama çalıştır"""
+        """Sürekli tarama çalıştır - rate limiting ile"""
         print("🔍 Upbit Duyuru Tarayıcısı başlatıldı")
         print(f"📡 Tarama URL'i: {self.announcement_url}")
+        print("⚠️ Rate limiting aktif: 5 dakikada bir kontrol")
+        
+        # İlk kontrol
+        consecutive_errors = 0
         
         while True:
             try:
@@ -233,32 +275,80 @@ class UpbitAnnouncementScraper:
                 
                 if announcements:
                     print(f"📢 {len(announcements)} duyuru alındı")
+                    consecutive_errors = 0  # Başarılı istekte hata sayısını sıfırla
                     
-                    # Yeni coinleri işle
-                    new_coins = self.process_announcements(announcements)
-                    
-                    if new_coins:
-                        self.save_new_coins(new_coins)
-                        print(f"🎉 {len(new_coins)} yeni coin tespit edildi!")
-                    else:
-                        print("⭕ Yeni coin duyurusu bulunamadı")
+                    # İlk 5 duyuruyu detaylı incele
+                    for i, announcement in enumerate(announcements[:5], 1):
+                        print(f"\n📋 Duyuru {i}: {announcement['title']}")
+                        
+                        # Yeni coin kontrolü
+                        if self.is_new_coin_announcement(announcement['title']):
+                            print(f"🚨 YENİ COİN DUYURUSU TESPİT EDİLDİ!")
+                            
+                            # Sembolleri çıkar
+                            symbols = self.extract_coin_symbols(announcement['title'])
+                            
+                            if symbols:
+                                print(f"🪙 Tespit edilen semboller: {symbols}")
+                                
+                                # İlk sembolü kullan
+                                main_symbol = symbols[0]
+                                
+                                # PERP formatında kaydet
+                                perp_symbol = main_symbol + "USDT_UMCBL"
+                                perp_file = os.path.join(self.BASE_DIR, "PERP", "new_coin_output.txt")
+                                
+                                try:
+                                    with open(perp_file, 'w') as f:
+                                        f.write(perp_symbol)
+                                    print(f"🚀 TETİKLENDİ! PERP formatında kaydedildi: {perp_symbol}")
+                                    
+                                    # Kayıt dosyasına da ekle
+                                    coin_data = [{
+                                        'symbols': symbols,
+                                        'title': announcement['title'],
+                                        'date': announcement['date'],
+                                        'link': announcement['link'],
+                                        'detection_time': datetime.now().isoformat(),
+                                        'triggered': True
+                                    }]
+                                    self.save_new_coins(coin_data)
+                                    
+                                    print(f"🎯 OTOMASYON TETİKLENDİ: {main_symbol}")
+                                    
+                                except Exception as e:
+                                    print(f"❌ Dosya yazma hatası: {e}")
+                            else:
+                                print("⚠️ Sembol çıkarılamadı")
+                        else:
+                            print("ℹ️ Normal duyuru")
+                
                 else:
                     print("⚠️ Duyuru alınamadı")
+                    consecutive_errors += 1
                 
                 # Son kontrol zamanını güncelle
                 self.save_last_check_time()
                 
-                # 60 saniye bekle
-                print("💤 60 saniye bekleniyor...")
-                time.sleep(60)
+                # Rate limiting - banlama riskini azaltmak için
+                if consecutive_errors > 3:
+                    wait_time = 600  # 10 dakika bekle
+                    print(f"⚠️ Çoklu hata nedeniyle {wait_time//60} dakika bekleniyor...")
+                else:
+                    wait_time = 300  # Normal: 5 dakikada bir kontrol
+                    print(f"💤 {wait_time//60} dakika bekleniyor...")
+                
+                time.sleep(wait_time)
                 
             except KeyboardInterrupt:
                 print("\n👋 Duyuru tarayıcısı durduruldu")
                 break
             except Exception as e:
                 print(f"❌ Beklenmeyen hata: {e}")
-                print("⏳ 30 saniye bekleyip tekrar deneniyor...")
-                time.sleep(30)
+                consecutive_errors += 1
+                wait_time = min(300 + (consecutive_errors * 60), 900)  # Max 15 dakika
+                print(f"⏳ {wait_time//60} dakika bekleyip tekrar deneniyor...")
+                time.sleep(wait_time)
 
 def main():
     """Ana fonksiyon"""
