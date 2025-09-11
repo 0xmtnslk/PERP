@@ -3,7 +3,12 @@ import requests
 import json
 import time
 import os
+import sys
 from datetime import datetime
+
+# Ana dizini sys.path'e ekle (notification_config import etmek için)
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from notification_config import notification_config
 
 # Kullanicinin ev dizininde bir alt dizin olustur
 BASE_DIR = os.path.join(os.getcwd(), "PERP")
@@ -55,10 +60,14 @@ def append_new_pairs_to_file(new_pairs):
   existing_data.append(new_entry)
   save_to_file(existing_data, "upbit_new_list.json")
   
-  # Son eklenen USDT coinini SAFEUSDT_UMCBL formatinda yaz
+  # Son eklenen USDT coinini SAFEUSDT_UMCBL formatinda yaz (centralized config kullanarak)
   last_new_coin = new_pairs[-1]['market'].split('-')[1] + "USDT_UMCBL"
-  with open(os.path.join(BASE_DIR, "new_coin_output.txt"), 'w', encoding='utf-8') as file:
+  # Centralized notification config kullan
+  new_coin_file = notification_config.new_coin_output_txt
+  with open(new_coin_file, 'w', encoding='utf-8') as file:
       file.write(last_new_coin)
+  print(f"📝 New coin yazıldı (centralized): {last_new_coin}")
+  print(f"   📁 Path: {new_coin_file}")
 
 def main():
   # Ilk calistirmada dosyalari bos olarak baslat

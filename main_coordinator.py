@@ -101,6 +101,7 @@ class TradingSystemCoordinator:
             ("Secret Manager", "secret.py", "🔐 API key yönetimi"),
             ("Upbit Monitor", os.path.join("PERP", "upbit_market_tracker.py"), "👀 Upbit yeni coin taraması"),
             ("Upbit Announcements", "upbit_announcement_scraper.py", "📢 Upbit duyuru sayfası taraması"),
+            ("Telegram Bot", "advanced_telegram_bot.py", "🤖 Telegram kullanıcı arayüzü"),
             ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme")
         ]
         
@@ -120,7 +121,8 @@ class TradingSystemCoordinator:
         # Ana ticaret scriptlerini daha sonra başlat (API keyler gerekli)
         print("\n⚠️ Ana ticaret scripti API anahtarları girildikten sonra başlatılacak:")
         print("   - bitget_perp_order.py (Bitget otomasyonu)")
-        print("\n🔒 Gate.io bileşenleri pasife alındı (isteğe bağlı olarak aktifleştirilebilir)")
+        print("\n🤖 Telegram Bot: Kullanıcılar bot üzerinden API anahtarlarını ekleyebilir")
+        print("🔒 Gate.io bileşenleri pasife alındı (isteğe bağlı olarak aktifleştirilebilir)")
         
     def monitor_processes(self):
         """İşlemleri izle ve yeniden başlat"""

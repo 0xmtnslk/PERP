@@ -11,6 +11,7 @@ import requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 import re
+from notification_config import notification_config
 
 class UpbitAnnouncementScraper:
     def __init__(self):
@@ -20,9 +21,12 @@ class UpbitAnnouncementScraper:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        # Dosya yolları
-        self.announcement_file = os.path.join(self.BASE_DIR, "PERP", "announcement_coins.json")
-        self.last_check_file = os.path.join(self.BASE_DIR, "PERP", "last_announcement_check.json")
+        # Centralized notification configuration kullan
+        self.announcement_file = notification_config.announcement_coins_file
+        self.last_check_file = notification_config.last_announcement_check_file
+        print(f"🔧 Upbit Scraper using centralized config:")
+        print(f"   📁 Announcements: {self.announcement_file}")
+        print(f"   📁 Last check: {self.last_check_file}")
         
         # Yeni coin patternleri (Korece ve İngilizce)
         self.new_coin_patterns = [
@@ -241,14 +245,15 @@ class UpbitAnnouncementScraper:
                         new_coins.append(coin_data)
                         print(f"🪙 Tespit edilen semboller: {', '.join(symbols)}")
                         
-                        # En son sembolü PERP formatında kaydet (mevcut sisteme entegre için)
+                        # En son sembolü PERP formatında kaydet (centralized config kullanarak)
                         if symbols:
                             latest_symbol = symbols[-1] + "USDT_UMCBL"
-                            perp_file = os.path.join(self.BASE_DIR, "PERP", "new_coin_output.txt")
+                            perp_file = notification_config.new_coin_output_txt
                             try:
                                 with open(perp_file, 'w') as f:
                                     f.write(latest_symbol)
-                                print(f"📝 PERP formatında kaydedildi: {latest_symbol}")
+                                print(f"📝 PERP formatında kaydedildi (centralized): {latest_symbol}")
+                                print(f"   📁 Path: {perp_file}")
                             except Exception as e:
                                 print(f"⚠️ PERP dosya yazma hatası: {e}")
                 
@@ -313,6 +318,31 @@ class UpbitAnnouncementScraper:
                                         'triggered': True
                                     }]
                                     self.save_new_coins(coin_data)
+                                    
+                                    # Telegram bot için bildirim dosyası oluştur
+                                    notification_data = {
+                                        "type": "NEW_COIN",
+                                        "timestamp": datetime.now().isoformat(),
+                                        "coins": []
+                                    }
+                                    
+                                    for symbol in symbols:
+                                        notification_data["coins"].append({
+                                            "symbol": symbol,
+                                            "name": announcement['title'],
+                                            "price": 0.0,  # Fiyat bilgisi için ayrı API call gerekebilir
+                                            "perp_symbol": symbol + "USDT_UMCBL"
+                                        })
+                                    
+                                    # Telegram bot için bildirim dosyası oluştur (centralized config)
+                                    telegram_notification_file = notification_config.telegram_notifications_file
+                                    try:
+                                        with open(telegram_notification_file, 'w') as f:
+                                            json.dump(notification_data, f, indent=2, ensure_ascii=False)
+                                        print(f"📱 Telegram bildirimi hazırlandı (centralized): {len(symbols)} coin")
+                                        print(f"   📁 Path: {telegram_notification_file}")
+                                    except Exception as e:
+                                        print(f"⚠️ Telegram bildirimi oluşturma hatası: {e}")
                                     
                                     print(f"🎯 OTOMASYON TETİKLENDİ: {main_symbol}")
                                     
