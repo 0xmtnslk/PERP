@@ -41,169 +41,122 @@ class UpbitAnnouncementScraper:
         ]
         
     def get_announcements(self):
-        """Upbit duyuru sayfasından son duyuruları al (React SPA uyumlu)"""
+        """Upbit duyuru sayfasından son duyuruları al (Production Ready HTTP)"""
         announcements = []
         
-        # METHOD 1: Selenium WebDriver ile dinamik içerik yükleme
+        # METHOD 1: HTTP Request - Upbit API veya website scraping
         try:
-            announcements = self.get_announcements_selenium()
+            announcements = self.get_announcements_http()
             if announcements:
-                print(f"✅ Selenium ile {len(announcements)} duyuru alındı")
+                print(f"✅ HTTP ile {len(announcements)} duyuru alındı")
                 return announcements
         except Exception as e:
-            print(f"⚠️ Selenium hatası: {e}")
+            print(f"⚠️ HTTP request hatası: {e}")
         
-        # METHOD 2: Fallback - manuel test duyuruları (geliştirme için)
-        try:
-            announcements = self.get_test_announcements()
-            if announcements:
-                print(f"🔧 Test duyuruları kullanılıyor: {len(announcements)}")
-                return announcements
-        except Exception as e:
-            print(f"⚠️ Test duyuruları hatası: {e}")
-        
-        # METHOD 3: Empty fallback
-        print("❌ Hiçbir yöntem çalışmadı")
+        # METHOD 2: Empty result (production mode - no fallback test data)
+        print("⚠️ Duyuru alınamadı - production mode")
         return []
     
-    def get_announcements_selenium(self):
-        """Selenium WebDriver ile React SPA'dan duyuru çekme"""
+    def get_announcements_http(self):
+        """HTTP requests ile Upbit duyuru sayfasından veri çekme"""
         try:
-            # Headless Chrome için selenium import
-            from selenium import webdriver
-            from selenium.webdriver.common.by import By
-            from selenium.webdriver.support.ui import WebDriverWait
-            from selenium.webdriver.support import expected_conditions as EC
-            from selenium.webdriver.chrome.options import Options
+            print("🌐 Upbit duyuru sayfası HTTP ile çekiliyor...")
             
-            # Chrome seçenekleri
-            chrome_options = Options()
-            chrome_options.add_argument('--headless')
-            chrome_options.add_argument('--no-sandbox')
-            chrome_options.add_argument('--disable-dev-shm-usage')
-            chrome_options.add_argument('--disable-gpu')
-            chrome_options.add_argument('--window-size=1920,1080')
-            chrome_options.add_argument('--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+            # HTTP isteği gönder
+            response = requests.get(self.announcement_url, headers=self.headers, timeout=10)
+            response.raise_for_status()
             
-            # WebDriver başlat
-            driver = webdriver.Chrome(options=chrome_options)
+            # HTML parse et
+            soup = BeautifulSoup(response.text, 'html.parser')
+            announcements = []
             
-            try:
-                print("🌐 Upbit sayfası yükleniyor (Selenium)...")
-                driver.get(self.announcement_url)
-                
-                # Sayfanın yüklenmesini bekle (max 15 saniye)
-                WebDriverWait(driver, 15).until(
-                    lambda driver: driver.execute_script("return document.readyState") == "complete"
-                )
-                
-                # React bileşenlerinin yüklenmesi için ek bekleme
-                time.sleep(3)
-                
-                # Duyuru elementlerini farklı selector'larla dene
-                announcement_selectors = [
-                    # Modern React selectors
-                    '[data-testid*="notice"]',
-                    '[class*="notice"]',
-                    '[class*="announcement"]',
-                    '[class*="item"]',
-                    'a[href*="/service_center/notice/"]',
-                    # Generic selectors
-                    'article',
-                    'li',
-                    '.list-item',
-                    '[role="listitem"]'
-                ]
-                
-                announcements = []
-                
-                for selector in announcement_selectors:
-                    try:
-                        elements = driver.find_elements(By.CSS_SELECTOR, selector)
+            # Farklı HTML yapılarını dene
+            selectors_to_try = [
+                # Upbit'in muhtemel HTML yapıları
+                'a[href*="/service_center/notice/"]',
+                '.notice-item',
+                '.announcement-item', 
+                '.list-item',
+                'tr[onclick*="notice"]',
+                'li:contains("Market Support")',
+                # Generic selectors
+                'a[href*="notice"]',
+                'div[class*="title"]',
+                'span[class*="title"]'
+            ]
+            
+            for selector in selectors_to_try:
+                try:
+                    if ':contains(' in selector:
+                        # BeautifulSoup doesn't support :contains, use find_all with text
+                        elements = soup.find_all(text=re.compile('Market Support', re.IGNORECASE))
+                        # Get parent elements
+                        parent_elements = [elem.parent for elem in elements if elem.parent]
+                    else:
+                        parent_elements = soup.select(selector)
+                    
+                    if parent_elements:
+                        print(f"📋 {selector}: {len(parent_elements)} element bulundu")
                         
-                        if elements and len(elements) > 0:
-                            print(f"📋 {selector}: {len(elements)} element bulundu")
-                            
-                            for i, element in enumerate(elements[:10]):  # İlk 10 element
-                                try:
-                                    # Element text'ini al
-                                    title = element.text.strip()
-                                    
-                                    # Link varsa al
-                                    link = ""
-                                    try:
-                                        link = element.get_attribute('href') or ""
-                                        if not link and element.tag_name != 'a':
-                                            # Parent'ta a tag'i ara
-                                            parent_link = element.find_element(By.XPATH, './/a | ./ancestor::a[1]')
-                                            if parent_link:
-                                                link = parent_link.get_attribute('href') or ""
-                                    except:
-                                        pass
-                                    
-                                    if title and len(title) > 10:
-                                        announcements.append({
-                                            'title': title,
-                                            'date': datetime.now().strftime('%Y-%m-%d'),
-                                            'link': link,
-                                            'timestamp': datetime.now().isoformat(),
-                                            'method': 'selenium'
-                                        })
-                                        
-                                        print(f"  📄 {i+1}. {title[:80]}...")
-                                        
-                                except Exception as e:
-                                    continue
-                            
-                            if announcements:
-                                break  # İlk başarılı selector'la devam et
+                        for i, element in enumerate(parent_elements[:10]):
+                            try:
+                                # Title text'ini al
+                                title = element.get_text(strip=True) if hasattr(element, 'get_text') else str(element).strip()
                                 
-                    except Exception as e:
-                        continue
+                                # Link varsa al
+                                link = ""
+                                if hasattr(element, 'get') and element.get('href'):
+                                    link = element.get('href')
+                                    if link.startswith('/'):
+                                        link = 'https://upbit.com' + link
+                                elif hasattr(element, 'find') and element.find('a'):
+                                    link_elem = element.find('a')
+                                    if link_elem and link_elem.get('href'):
+                                        link = link_elem.get('href')
+                                        if link.startswith('/'):
+                                            link = 'https://upbit.com' + link
+                                
+                                if title and len(title) > 10:
+                                    announcements.append({
+                                        'title': title,
+                                        'date': datetime.now().strftime('%Y-%m-%d'),
+                                        'link': link,
+                                        'timestamp': datetime.now().isoformat(),
+                                        'method': 'http'
+                                    })
+                                    
+                                    print(f"  📄 {i+1}. {title[:80]}...")
+                                    
+                            except Exception as e:
+                                continue
+                        
+                        if announcements:
+                            break  # İlk başarılı selector'la devam et
+                            
+                except Exception as e:
+                    continue
+            
+            # Eğer hiçbir duyuru bulunamadıysa, en azından page title'ını kontrol et
+            if not announcements:
+                page_title = soup.find('title')
+                if page_title:
+                    print(f"📄 Sayfa başlığı: {page_title.get_text(strip=True)}")
                 
-                return announcements
-                
-            finally:
-                driver.quit()
-                
-        except ImportError:
-            print("⚠️ Selenium bulunamadı: pip install selenium")
+                # Meta description kontrol et
+                meta_desc = soup.find('meta', attrs={'name': 'description'})
+                if meta_desc:
+                    print(f"📄 Meta açıklama: {meta_desc.get('content', '')}")
+            
+            print(f"✅ HTTP ile {len(announcements)} duyuru bulundu")
+            return announcements
+            
+        except requests.RequestException as e:
+            print(f"❌ HTTP request hatası: {e}")
             raise
         except Exception as e:
-            print(f"❌ Selenium WebDriver hatası: {e}")
+            print(f"❌ HTML parsing hatası: {e}")
             raise
     
-    def get_test_announcements(self):
-        """Test amaçlı manuel duyurular (gerçek API olmadığında)"""
-        # Gerçek Upbit duyuru formatlarını simüle et
-        test_announcements = [
-            {
-                'title': 'Market Support for Arbitrum(ARB) (KRW, BTC, USDT Market)',
-                'date': '2024-03-21',
-                'link': 'https://upbit.com/service_center/notice/4829',
-                'timestamp': datetime.now().isoformat(),
-                'method': 'test'
-            },
-            {
-                'title': 'Market Support for Optimism(OP) (KRW, BTC, USDT Market)', 
-                'date': '2024-03-20',
-                'link': 'https://upbit.com/service_center/notice/4828',
-                'timestamp': datetime.now().isoformat(),
-                'method': 'test'
-            },
-            {
-                'title': 'Market Support for Polygon(MATIC) (KRW, BTC, USDT Market)',
-                'date': '2024-03-19', 
-                'link': 'https://upbit.com/service_center/notice/4827',
-                'timestamp': datetime.now().isoformat(),
-                'method': 'test'
-            }
-        ]
-        
-        print("🔧 TEST MOD: Simüle edilmiş duyurular kullanılıyor")
-        print("⚠️ Gerçek zamanlı tarama için Selenium gerekli")
-        
-        return test_announcements
     
     def extract_coin_symbols(self, title, announcement_text=""):
         """Duyuru başlığından coin sembollerini çıkar - özellikle parantez içindeki sembolleri"""

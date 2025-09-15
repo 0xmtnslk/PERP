@@ -69,10 +69,55 @@ def append_new_pairs_to_file(new_pairs):
   print(f"📝 New coin yazıldı (centralized): {last_new_coin}")
   print(f"   📁 Path: {new_coin_file}")
 
+def initialize_state_files():
+  """Durum dosyalarını başlat - sadece yoksa boş oluştur, varsa koru"""
+  files_to_check = ["upbit_ciftler_1.json", "upbit_ciftler_2.json", "seen_markets.json"]
+  
+  for filename in files_to_check:
+    full_path = os.path.join(BASE_DIR, filename)
+    if not os.path.exists(full_path):
+      if filename == "seen_markets.json":
+        # seen_markets için özel başlangıç yapısı
+        initial_data = {
+          "last_update": datetime.now().isoformat(),
+          "usdt_markets": []
+        }
+      else:
+        initial_data = []
+      
+      with open(full_path, 'w', encoding='utf-8') as f:
+        json.dump(initial_data, f, indent=4, ensure_ascii=False)
+      print(f"📁 {filename} başlangıç dosyası oluşturuldu")
+    else:
+      print(f"✅ {filename} mevcut - korundu")
+
+def load_seen_markets():
+  """Daha önce görülen USDT marketlerini yükle"""
+  seen_markets_file = os.path.join(BASE_DIR, "seen_markets.json")
+  try:
+    with open(seen_markets_file, 'r', encoding='utf-8') as f:
+      data = json.load(f)
+    return set(data.get('usdt_markets', []))
+  except (FileNotFoundError, json.JSONDecodeError):
+    return set()
+
+def save_seen_markets(markets_set):
+  """Görülen USDT marketlerini kaydet"""
+  seen_markets_file = os.path.join(BASE_DIR, "seen_markets.json")
+  data = {
+    "last_update": datetime.now().isoformat(),
+    "usdt_markets": list(markets_set)
+  }
+  with open(seen_markets_file, 'w', encoding='utf-8') as f:
+    json.dump(data, f, indent=4, ensure_ascii=False)
+
 def main():
-  # Ilk calistirmada dosyalari bos olarak baslat
-  save_to_file([], "upbit_ciftler_1.json")
-  save_to_file([], "upbit_ciftler_2.json")
+  # Durum dosyalarını kontrollü olarak başlat
+  initialize_state_files()
+  
+  # Daha önce görülen marketleri yükle
+  seen_markets = load_seen_markets()
+  print(f"🔄 Daha önce görülen USDT marketleri: {len(seen_markets)}")
 
   toggle = True  # Dosya yazma sirasini kontrol etmek icin
 
@@ -96,8 +141,16 @@ def main():
           old_usdt_markets = [pair['market'] for pair in old_data if pair['market'].startswith('USDT-')]
           new_usdt_markets = [pair['market'] for pair in new_data if pair['market'].startswith('USDT-')]
           
-          # Gerçekten yeni olan marketleri bul
-          truly_new_markets = [market for market in new_usdt_markets if market not in old_usdt_markets]
+          # Seen markets ile kontrol et - hem eski data hem de persistent state
+          current_markets_set = set(new_usdt_markets)
+          old_markets_set = set(old_usdt_markets)
+          
+          # Gerçekten yeni olan marketleri bul - hem file comparison hem de seen_markets kontrolü
+          truly_new_markets = []
+          for market in new_usdt_markets:
+            # Hem old_data'da hem de seen_markets'te yoksa gerçekten yeni
+            if market not in old_markets_set and market not in seen_markets:
+              truly_new_markets.append(market)
           
           if truly_new_markets:
               # Yeni market'ların full data'sını al
@@ -105,7 +158,20 @@ def main():
               append_new_pairs_to_file([new_pairs[-1]])
               print(f"{datetime.now()}: YENİ COIN TESPİT EDİLDİ!")
               print(f"Yeni eklenen ciftler: {[p['market'] for p in new_pairs]}")
+              
+              # Seen markets'e yeni marketleri ekle
+              seen_markets.update(truly_new_markets)
+              save_seen_markets(seen_markets)
+              print(f"💾 Seen markets güncellendi: {len(seen_markets)} total")
           else:
+              # Mevcut marketleri seen_markets'e ekle (ilk çalıştırmada persistence için)
+              if current_markets_set:
+                initial_size = len(seen_markets)
+                seen_markets.update(current_markets_set)
+                if len(seen_markets) > initial_size:
+                  save_seen_markets(seen_markets)
+                  print(f"🔄 Mevcut marketler persistence'e eklendi: {len(seen_markets)} total")
+              
               # Debug için - hangi marketler var kontrol et
               print(f"{datetime.now()}: Kontrol - USDT marketleri: {len(new_usdt_markets)} (yeni yok)")
 
