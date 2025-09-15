@@ -205,8 +205,8 @@ class TradingSystemCoordinator:
             # Sistem bileşenlerini başlat
             self.start_all_components()
             
-            # API anahtarlarını kontrol et ve ana scriptleri başlat
-            print("\n🔍 API anahtarları kontrol ediliyor...")
+            # User trading engine'i başlat
+            print("\n🔍 User Trading Engine başlatılıyor...")
             time.sleep(5)
             self.start_trading_scripts()
             

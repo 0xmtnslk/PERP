@@ -13,6 +13,9 @@ import threading
 import sqlite3
 from typing import Dict, Any
 import logging
+import hashlib
+import base64
+from cryptography.fernet import Fernet
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -22,12 +25,19 @@ class UserTradingEngine:
     def __init__(self):
         self.BASE_DIR = os.getcwd()
         self.users_dir = os.path.join(self.BASE_DIR, "PERP", "users")
-        self.db_path = os.path.join(self.BASE_DIR, "telegram_bot.db")
+        self.db_path = os.path.join(self.BASE_DIR, "trading_bot.db")
         self.running = False
         self.user_threads = {}
         
         # Ensure users directory exists
         os.makedirs(self.users_dir, exist_ok=True)
+        
+        # Setup encryption for API keys (same as advanced_telegram_bot.py)
+        password = os.environ.get('ENCRYPTION_KEY', 'default_encryption_key_change_in_production')
+        salt = b'stable_salt_value_'  # Same salt as in advanced_telegram_bot.py (16 bytes)
+        kdf_key = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
+        self.encryption_key = base64.urlsafe_b64encode(kdf_key)
+        self.cipher = Fernet(self.encryption_key)
         
     def get_user_api_keys(self, user_id: int) -> Dict[str, Any]:
         """Get user's API keys from database"""
@@ -36,7 +46,7 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT api_key, secret_key, passphrase, is_configured 
+                SELECT bitget_api_key, bitget_secret_key, bitget_passphrase, is_configured 
                 FROM user_api_keys WHERE user_id = ?
             """, (user_id,))
             
@@ -44,12 +54,21 @@ class UserTradingEngine:
             conn.close()
             
             if result:
-                return {
-                    'api_key': result[0],
-                    'secret_key': result[1], 
-                    'passphrase': result[2],
-                    'is_configured': bool(result[3])
-                }
+                # Decrypt the API keys
+                try:
+                    api_key = self.cipher.decrypt(result[0].encode()).decode() if result[0] else ""
+                    secret_key = self.cipher.decrypt(result[1].encode()).decode() if result[1] else ""
+                    passphrase = self.cipher.decrypt(result[2].encode()).decode() if result[2] else ""
+                    
+                    return {
+                        'api_key': api_key,
+                        'secret_key': secret_key, 
+                        'passphrase': passphrase,
+                        'is_configured': bool(result[3])
+                    }
+                except Exception as e:
+                    logger.error(f"Error decrypting API keys for user {user_id}: {e}")
+                    return None
             return None
             
         except Exception as e:
@@ -63,7 +82,7 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT trading_amount, take_profit, auto_trading, notifications, emergency_stop 
+                SELECT trading_amount_usdt, take_profit_percentage, auto_trading, notifications, emergency_stop 
                 FROM user_settings WHERE user_id = ?
             """, (user_id,))
             
