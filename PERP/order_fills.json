@@ -1,23 +1,39 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1757949137042,
+    "requestTime": 1757949436418,
     "data": [
         {
-            "tradeId": "1351502123443134471",
-            "symbol": "ETHUSDT_UMCBL",
-            "orderId": "1351502123182465025",
-            "price": "4505.88",
-            "sizeQty": "0.02",
-            "fee": "-0.05407056",
+            "tradeId": "1351503379339309120",
+            "symbol": "DYMUSDT_UMCBL",
+            "orderId": "1351503379137437699",
+            "price": "0.2136",
+            "sizeQty": "86.5",
+            "fee": "-0.01108584",
             "side": "open_long",
-            "fillAmount": "90.1176",
+            "fillAmount": "18.4764",
             "profit": "0",
             "enterPointSource": "API",
             "tradeSide": "open_long",
             "holdMode": "double_hold",
             "takerMakerFlag": "taker",
-            "cTime": "1757949136601"
+            "cTime": "1757949436030"
+        },
+        {
+            "tradeId": "1351503379339309118",
+            "symbol": "DYMUSDT_UMCBL",
+            "orderId": "1351503379137437699",
+            "price": "0.2136",
+            "sizeQty": "147.6",
+            "fee": "-0.01891641",
+            "side": "open_long",
+            "fillAmount": "31.5273",
+            "profit": "0",
+            "enterPointSource": "API",
+            "tradeSide": "open_long",
+            "holdMode": "double_hold",
+            "takerMakerFlag": "taker",
+            "cTime": "1757949436030"
         }
     ]
 }
