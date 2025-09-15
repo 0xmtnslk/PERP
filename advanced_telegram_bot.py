@@ -510,6 +510,7 @@ Ayarlamak istediğin kısmı seç:
             [InlineKeyboardButton("💰 İşlem Miktarı", callback_data="set_amount")],
             [InlineKeyboardButton("📈 Take Profit", callback_data="set_tp")],
             [InlineKeyboardButton("🤖 Oto Ticaret", callback_data="toggle_auto")],
+            [InlineKeyboardButton("📊 Manuel Long", callback_data="manual_long")],
             [InlineKeyboardButton("🔔 Bildirimler", callback_data="toggle_notifications")],
             [InlineKeyboardButton("🚨 ACİL DURDUR", callback_data="emergency_stop")],
             [InlineKeyboardButton("◀️ Ana Menü", callback_data="back_main")]
@@ -901,6 +902,164 @@ Otomatik ticaret ayarların aktifse işlem başlatılacak.
             except Exception as e:
                 print(f"Bildirim gönderme hatası (User {user_id}): {e}")
     
+    async def manual_long_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Manuel long işlemi callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        api_keys = self.db.get_user_api_keys(user_id)
+        settings = self.db.get_user_settings(user_id)
+        
+        # API anahtarları kontrolü
+        if not api_keys or not api_keys['is_configured']:
+            await query.edit_message_text(
+                "❌ **API Anahtarları Eksik!**\n\n"
+                "Manuel işlem yapmak için önce Bitget API anahtarlarını eklemen gerekiyor.\n\n"
+                "🔑 Bot Ayarları → API Anahtarları",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔑 API Ekle", callback_data="setup_api")],
+                    [InlineKeyboardButton("◀️ Geri", callback_data="main_menu")]
+                ])
+            )
+            return
+        
+        # Popüler coin listesi
+        popular_coins = [
+            "BTC", "ETH", "BNB", "SOL", "ADA", "XRP", "DOT", "MATIC", 
+            "LINK", "AVAX", "LTC", "BCH", "UNI", "ATOM", "FTM", "NEAR"
+        ]
+        
+        manual_text = f"""
+📊 **Manuel Long İşlemi**
+
+🎯 **Mevcut Ayarların:**
+💰 İşlem Miktarı: {settings['trading_amount']} USDT
+📈 Take Profit: %{settings['take_profit']}
+⚡ Leverage: Maksimum (Bitget otomatik)
+
+🪙 **Coin Seçimi:**
+Aşağıdaki popüler coinlerden birini seç.
+        """
+        
+        # Popüler coinleri 4'lü satırlarda düzenle
+        keyboard = []
+        for i in range(0, len(popular_coins), 4):
+            row = []
+            for j in range(i, min(i + 4, len(popular_coins))):
+                coin = popular_coins[j]
+                row.append(InlineKeyboardButton(f"{coin}", callback_data=f"long_{coin}"))
+            keyboard.append(row)
+        
+        # Alt butonlar
+        keyboard.append([InlineKeyboardButton("◀️ Geri", callback_data="main_menu")])
+        
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(
+            manual_text,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=reply_markup
+        )
+    
+    async def manual_long_selection_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Manuel long coin seçimi callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        coin_symbol = query.data.replace("long_", "")
+        settings = self.db.get_user_settings(user_id)
+        
+        # Onay mesajı
+        confirm_text = f"""
+🚀 **Long İşlemi Onayı**
+
+🪙 **Coin:** {coin_symbol}USDT_UMCBL
+💰 **Miktar:** {settings['trading_amount']} USDT
+📈 **Take Profit:** %{settings['take_profit']}
+⚡ **Leverage:** Maksimum
+🎯 **İşlem Türü:** Long (Yükseliş bahsi)
+
+⚠️ **DİKKAT:** Bu gerçek para ile işlem açacak!
+
+Bu ayarlarla long işlemi açmak istediğinden emin misin?
+        """
+        
+        keyboard = [
+            [
+                InlineKeyboardButton("✅ EVET, AÇ", callback_data=f"confirm_long_{coin_symbol}"),
+                InlineKeyboardButton("❌ HAYIR", callback_data="manual_long")
+            ]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(
+            confirm_text,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=reply_markup
+        )
+    
+    async def confirm_manual_long_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Manuel long işlemini onayla ve gerçekleştir"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        coin_symbol = query.data.replace("confirm_long_", "")
+        settings = self.db.get_user_settings(user_id)
+        
+        try:
+            # Manuel long işlemi dosyasını oluştur
+            perp_symbol = f"{coin_symbol}USDT_UMCBL"
+            perp_file = os.path.join(os.path.dirname(__file__), "PERP", "new_coin_output.txt")
+            
+            with open(perp_file, 'w') as f:
+                f.write(perp_symbol)
+            
+            # Log kaydı oluştur
+            logger.info(f"Manual long triggered: {coin_symbol} by user {user_id}")
+            
+            # Bildirim mesajı
+            await query.edit_message_text(
+                f"🚀 **Manuel Long İşlemi Tetiklendi!**\n\n"
+                f"🪙 **Coin:** {coin_symbol}\n"
+                f"💰 **Miktar:** {settings['trading_amount']} USDT\n"
+                f"📈 **Take Profit:** %{settings['take_profit']}\n"
+                f"⚡ **Format:** {perp_symbol}\n\n"
+                f"🔄 İşlem Bitget'te açılıyor...\n"
+                f"📱 Sonuç bildirimi gelecek!\n\n"
+                f"⚠️ Pozisyon durumunu takip edin.",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📊 İşlem Durumu", callback_data="trade_status")],
+                    [InlineKeyboardButton("🚨 ACİL DURDUR", callback_data="emergency_stop")],
+                    [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
+                ])
+            )
+            
+            # Veritabanına bildirim ekle
+            self.db.add_notification(
+                user_id, 
+                'MANUAL_LONG', 
+                f'Manuel Long: {coin_symbol}', 
+                f'{coin_symbol} için manuel long işlemi tetiklendi ({settings["trading_amount"]} USDT)'
+            )
+            
+        except Exception as e:
+            logger.error(f"Manual long error for user {user_id}: {e}")
+            await query.edit_message_text(
+                f"❌ **Manuel Long Hatası!**\n\n"
+                f"Hata: {str(e)}\n\n"
+                f"Lütfen tekrar deneyin.",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔄 Tekrar Dene", callback_data="manual_long")],
+                    [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
+                ])
+            )
+    
     async def broadcast_trade_notification(self, user_id: int, action: str, coin_symbol: str, 
                                          amount: float, price: float, trade_id: int):
         """İşlem bildirimini kullanıcıya gönder"""
@@ -1043,6 +1202,12 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await bot_instance.emergency_stop_callback(update, context)
     elif data == "confirm_emergency":
         await bot_instance.confirm_emergency_stop(update, context)
+    elif data == "manual_long":
+        await bot_instance.manual_long_callback(update, context)
+    elif data.startswith("long_"):
+        await bot_instance.manual_long_selection_callback(update, context)
+    elif data.startswith("confirm_long_"):
+        await bot_instance.confirm_manual_long_callback(update, context)
     else:
         await query.answer("Bu özellik henüz hazır değil!")
 
