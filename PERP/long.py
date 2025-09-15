@@ -84,7 +84,72 @@ def save_order_fills_to_file(order_fills_response, file_path):
   except IOError as e:
       print(f"Dosya yazma hatasi: {e}")
 
+def get_all_positions(api_key, api_secret_key, passphrase):
+  """Tüm açık pozisyonları getir - kar/zarar hesabı için"""
+  timestamp = str(get_timestamp())
+  request_path = "/api/mix/v1/position/allPosition"
+  
+  # Query parameters 
+  params = {"productType": "umcbl"}
+  query_string = parse_params_to_str(params)
+  
+  sign = create_signature(pre_hash(timestamp, "GET", request_path + query_string, ""), api_secret_key)
+
+  headers = {
+      "ACCESS-KEY": api_key,
+      "ACCESS-SIGN": sign,
+      "ACCESS-PASSPHRASE": passphrase,
+      "ACCESS-TIMESTAMP": timestamp,
+      "Content-Type": "application/json"
+  }
+
+  url = "https://api.bitget.com" + request_path + query_string
+  response = requests.get(url, headers=headers)
+
+  if response.status_code == 200:
+      try:
+          data = response.json()
+          if data['code'] == '00000':
+              return data['data']
+          else:
+              print(f"API hatası: {data['msg']}")
+              return []
+      except json.JSONDecodeError:
+          print("Pozisyon verisi JSON formatında değil")
+          return []
+  else:
+      print(f"Pozisyon alma hatası: {response.status_code}")
+      return []
+
 def close_all_positions(api_key, api_secret_key, passphrase):
+  # Önce pozisyonları al - kar/zarar hesabı için
+  positions = get_all_positions(api_key, api_secret_key, passphrase)
+  
+  total_pnl = 0.0
+  active_positions = []
+  
+  if positions:
+      for position in positions:
+          # Sadece açık pozisyonları say (size > 0)
+          size = float(position.get('size', 0))
+          if size > 0:
+              unrealized_pnl = float(position.get('unrealizedPL', 0))
+              total_pnl += unrealized_pnl
+              active_positions.append({
+                  'symbol': position.get('symbol', 'N/A'),
+                  'size': size,
+                  'side': position.get('side', 'N/A'),
+                  'unrealizedPL': unrealized_pnl,
+                  'markPrice': position.get('markPrice', 'N/A')
+              })
+      
+      print(f"📊 Kapatılacak Pozisyonlar: {len(active_positions)}")
+      print(f"💰 Toplam Kar/Zarar: {total_pnl:.2f} USDT")
+      for pos in active_positions:
+          pnl_status = "🟢" if pos['unrealizedPL'] > 0 else "🔴"
+          print(f"  {pnl_status} {pos['symbol']}: {pos['unrealizedPL']:.2f} USDT")
+  
+  # Şimdi pozisyonları kapat
   timestamp = str(get_timestamp())
   request_path = "/api/mix/v1/order/close-all-positions"
   
@@ -105,9 +170,26 @@ def close_all_positions(api_key, api_secret_key, passphrase):
 
   print("Kapama Istegi Durum Kodu:", response.status_code)
   try:
-      print("Kapama Yaniti:", response.json())
+      result = response.json()
+      print("Kapama Yaniti:", result)
+      
+      # Kar/zarar bilgilerini de döndür
+      return {
+          'status_code': response.status_code,
+          'response': result,
+          'total_pnl': total_pnl,
+          'positions_count': len(active_positions),
+          'positions': active_positions
+      }
   except json.JSONDecodeError:
       print("Yanit JSON formatinda degil:", response.text)
+      return {
+          'status_code': response.status_code,
+          'response': response.text,
+          'total_pnl': total_pnl,
+          'positions_count': len(active_positions),
+          'positions': active_positions
+      }
 
 # API'den maxLeverage degerini al
 def get_max_leverage(symbol):

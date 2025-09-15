@@ -104,6 +104,7 @@ class DirectTradingBot:
             # Create a simple Python script to call close_all_positions
             close_script = """
 import sys
+import json
 sys.path.append('PERP')
 from long import close_all_positions, load_api_credentials
 
@@ -115,8 +116,13 @@ passphrase = credentials.get("passphrase")
 
 if api_key and secret_key and passphrase:
     print("🔴 Tüm pozisyonlar kapatılıyor...")
-    close_all_positions(api_key, secret_key, passphrase)
-    print("✅ Pozisyonlar kapatıldı!")
+    result = close_all_positions(api_key, secret_key, passphrase)
+    
+    # JSON formatında sonuç döndür
+    if result:
+        print("RESULT_JSON:" + json.dumps(result))
+    else:
+        print("✅ Pozisyonlar kapatıldı - detay yok")
 else:
     print("❌ API anahtarları bulunamadı!")
 """
@@ -134,6 +140,36 @@ else:
         except Exception as e:
             logger.error(f"Close positions error: {e}")
             return False, "", str(e)
+    
+    def parse_close_response(self, stdout):
+        """Parse the enhanced close response to extract P&L data"""
+        try:
+            import json
+            import re
+            
+            # Look for RESULT_JSON: in the output
+            json_match = re.search(r'RESULT_JSON:({.*})', stdout)
+            if json_match:
+                result_data = json.loads(json_match.group(1))
+                
+                return {
+                    'has_data': True,
+                    'total_pnl': float(result_data.get('total_pnl', 0)),
+                    'count': int(result_data.get('positions_count', 0)),
+                    'positions': [
+                        {
+                            'symbol': pos.get('symbol', 'N/A'),
+                            'pnl': float(pos.get('unrealizedPL', 0))
+                        }
+                        for pos in result_data.get('positions', [])
+                    ]
+                }
+            else:
+                return {'has_data': False}
+                
+        except Exception as e:
+            logger.error(f"Parse close response error: {e}")
+            return {'has_data': False}
     
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
@@ -260,13 +296,36 @@ else:
                 success, stdout, stderr = self.close_all_positions()
                 
                 if success:
-                    await query.edit_message_text(
-                        f"✅ **Pozisyonlar Kapatıldı!**\n\n"
-                        f"🔴 Tüm açık pozisyonlar kapatıldı\n"
-                        f"💰 Kar/zarar hesaplandı\n\n"
-                        f"Detaylar: {stdout[:100] if stdout else 'İşlem tamamlandı'}",
-                        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Yeni İşlem", callback_data="manual_trade")]])
-                    )
+                    # Parse the enhanced close response for P&L details
+                    pnl_info = self.parse_close_response(stdout)
+                    
+                    if pnl_info['has_data']:
+                        pnl_status = "🟢" if pnl_info['total_pnl'] > 0 else "🔴"
+                        pnl_text = f"{pnl_status} {pnl_info['total_pnl']:+.2f} USDT"
+                        
+                        positions_text = ""
+                        if len(pnl_info['positions']) > 0:
+                            positions_text = "\n📊 **Kapatılan Pozisyonlar:**\n"
+                            for pos in pnl_info['positions'][:3]:  # En fazla 3 pozisyon göster
+                                pos_status = "🟢" if pos['pnl'] > 0 else "🔴"
+                                positions_text += f"  {pos_status} {pos['symbol']}: {pos['pnl']:+.2f} USDT\n"
+                        
+                        await query.edit_message_text(
+                            f"✅ **Pozisyonlar Kapatıldı!**\n\n"
+                            f"📊 Kapatılan: {pnl_info['count']} pozisyon\n"
+                            f"💰 **Toplam:** {pnl_text}\n"
+                            f"{positions_text}"
+                            f"\n🎯 İşlemler tamamlandı!",
+                            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Yeni İşlem", callback_data="manual_trade")]])
+                        )
+                    else:
+                        await query.edit_message_text(
+                            f"✅ **Pozisyonlar Kapatıldı!**\n\n"
+                            f"🔴 Tüm açık pozisyonlar kapatıldı\n"
+                            f"💰 Kar/zarar hesaplandı\n\n"
+                            f"Detaylar: {stdout[:100] if stdout else 'İşlem tamamlandı'}",
+                            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Yeni İşlem", callback_data="manual_trade")]])
+                        )
                 else:
                     await query.edit_message_text(
                         f"❌ **Kapatma Hatası!**\n\n"
