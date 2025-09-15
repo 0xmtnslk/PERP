@@ -190,6 +190,7 @@ class TradingBotDatabase:
                 user_id INTEGER PRIMARY KEY,
                 trading_amount_usdt REAL DEFAULT 20.0,
                 take_profit_percentage REAL DEFAULT 500.0,
+                leverage INTEGER DEFAULT 0,
                 auto_trading BOOLEAN DEFAULT 1,
                 notifications BOOLEAN DEFAULT 1,
                 emergency_stop BOOLEAN DEFAULT 0,
@@ -346,7 +347,7 @@ class TradingBotDatabase:
         cursor = conn.cursor()
         
         cursor.execute('''
-            SELECT trading_amount_usdt, take_profit_percentage, auto_trading, 
+            SELECT trading_amount_usdt, take_profit_percentage, leverage, auto_trading, 
                    notifications, emergency_stop
             FROM user_settings WHERE user_id = ?
         ''', (user_id,))
@@ -358,15 +359,17 @@ class TradingBotDatabase:
             return {
                 'trading_amount': result[0],
                 'take_profit': result[1],
-                'auto_trading': bool(result[2]),
-                'notifications': bool(result[3]),
-                'emergency_stop': bool(result[4])
+                'leverage': result[2],
+                'auto_trading': bool(result[3]),
+                'notifications': bool(result[4]),
+                'emergency_stop': bool(result[5])
             }
         
         # Varsayılan ayarlar
         return {
             'trading_amount': 20.0,
             'take_profit': 500.0,
+            'leverage': 0,
             'auto_trading': True,
             'notifications': True,
             'emergency_stop': False
@@ -502,6 +505,7 @@ Başlamak için aşağıdaki butonu kullan:
 🔑 **API Durumu:** {status_api}
 💰 **İşlem Miktarı:** {settings['trading_amount']} USDT
 📈 **Take Profit:** %{settings['take_profit']}
+⚡ **Leverage:** {settings['leverage']}x (0=Max)
 🤖 **Otomatik Ticaret:** {status_trading}
 🔔 **Bildirimler:** {"Açık" if settings['notifications'] else "Kapalı"}
 
@@ -512,6 +516,7 @@ Ayarlamak istediğin kısmı seç:
             [InlineKeyboardButton("🔑 API Anahtarları", callback_data="setup_api")],
             [InlineKeyboardButton("💰 İşlem Miktarı", callback_data="set_amount")],
             [InlineKeyboardButton("📈 Take Profit", callback_data="set_tp")],
+            [InlineKeyboardButton("⚡ Leverage", callback_data="set_leverage")],
             [InlineKeyboardButton("🤖 Oto Ticaret", callback_data="toggle_auto")],
             [InlineKeyboardButton("📊 Manuel Long", callback_data="manual_long")],
             [InlineKeyboardButton("🔔 Bildirimler", callback_data="toggle_notifications")],
@@ -1011,7 +1016,7 @@ Popüler coinlerden birini seç veya kendi symbol'ünü gir (ETH, BTC, SOL vs).
 🪙 **Coin:** {coin_symbol}USDT_UMCBL
 💰 **Miktar:** {settings['trading_amount']} USDT
 📈 **Take Profit:** %{settings['take_profit']}
-⚡ **Leverage:** Maksimum
+⚡ **Leverage:** {"MAX" if settings['leverage'] == 0 else f"{settings['leverage']}x"}
 🎯 **İşlem Türü:** Long (Yükseliş bahsi)
 
 ⚠️ **DİKKAT:** Bu gerçek para ile işlem açacak!
@@ -1255,6 +1260,464 @@ Bu ayarlarla {text} long işlemi açmak istediğinden emin misin?
         
         return symbol_mapping.get(symbol.upper())
     
+    async def set_leverage_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Leverage ayarlama callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        settings = self.db.get_user_settings(user_id)
+        
+        leverage_text = f"""
+⚡ **Leverage Ayarları**
+
+📊 **Mevcut Leverage:** {settings['leverage']}x (0=Max)
+
+🔸 **Açıklama:**
+• 0 = Maksimum Leverage (otomatik)
+• 2x-125x = Manuel leverage ayarı
+• Yüksek leverage = Yüksek risk
+
+💡 **Önerilen:** 2x-10x (güvenli)
+
+⚡ **Leverage seç:**
+        """
+        
+        # Leverage seçenekleri
+        keyboard = []
+        leverage_options = [0, 2, 5, 10, 20, 50, 100]
+        
+        # 2'li satırlar halinde düzenle
+        for i in range(0, len(leverage_options), 2):
+            row = []
+            for j in range(i, min(i + 2, len(leverage_options))):
+                lev = leverage_options[j]
+                text = f"MAX" if lev == 0 else f"{lev}x"
+                row.append(InlineKeyboardButton(text, callback_data=f"leverage_{lev}"))
+            keyboard.append(row)
+        
+        keyboard.append([InlineKeyboardButton("◀️ Geri", callback_data="main_menu")])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(
+            leverage_text,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=reply_markup
+        )
+    
+    async def leverage_selection_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Leverage seçim callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        leverage = int(query.data.replace("leverage_", ""))
+        
+        try:
+            # Leverage güncelle
+            self.db.update_user_settings(user_id, leverage=leverage)
+            
+            leverage_text = "MAX" if leverage == 0 else f"{leverage}x"
+            
+            await query.edit_message_text(
+                f"✅ **Leverage Güncellendi!**\n\n"
+                f"⚡ **Yeni Leverage:** {leverage_text}\n\n"
+                f"📝 Bu ayar sonraki işlemlerinizde kullanılacak.",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
+                ])
+            )
+            
+        except Exception as e:
+            await query.edit_message_text(
+                f"❌ **Leverage Güncelleme Hatası!**\n\n"
+                f"Hata: {str(e)}",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔄 Tekrar Dene", callback_data="set_leverage")]
+                ])
+            )
+    
+    async def toggle_auto_trading_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Auto trading toggle callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        settings = self.db.get_user_settings(user_id)
+        
+        # Toggle auto trading
+        new_status = not settings['auto_trading']
+        
+        try:
+            self.db.update_user_settings(user_id, auto_trading=new_status)
+            
+            status_text = "🟢 Aktif" if new_status else "🔴 Pasif"
+            warning = "⚠️ **DİKKAT:** Yeni coin duyurularında otomatik işlem açılacak!" if new_status else "📴 Otomatik işlemler devre dışı."
+            
+            await query.edit_message_text(
+                f"✅ **Otomatik Ticaret Güncellendi!**\n\n"
+                f"🤖 **Durum:** {status_text}\n\n"
+                f"{warning}",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
+                ])
+            )
+            
+        except Exception as e:
+            await query.edit_message_text(
+                f"❌ **Auto Trading Güncelleme Hatası!**\n\n"
+                f"Hata: {str(e)}",
+                parse_mode=ParseMode.MARKDOWN
+            )
+    
+    async def toggle_notifications_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Bildirimler toggle callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        settings = self.db.get_user_settings(user_id)
+        
+        # Toggle notifications
+        new_status = not settings['notifications']
+        
+        try:
+            self.db.update_user_settings(user_id, notifications=new_status)
+            
+            status_text = "🔔 Açık" if new_status else "🔇 Kapalı"
+            
+            await query.edit_message_text(
+                f"✅ **Bildirimler Güncellendi!**\n\n"
+                f"🔔 **Durum:** {status_text}",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
+                ])
+            )
+            
+        except Exception as e:
+            await query.edit_message_text(
+                f"❌ **Bildirim Güncelleme Hatası!**\n\n"
+                f"Hata: {str(e)}",
+                parse_mode=ParseMode.MARKDOWN
+            )
+    
+    async def trade_status_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """İşlem durumu callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        
+        # Kullanıcının son işlemlerini getir
+        try:
+            conn = sqlite3.connect(self.db.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT symbol, action, amount_usdt, price, profit_loss, status, created_at
+                FROM trade_history WHERE user_id = ? 
+                ORDER BY created_at DESC LIMIT 5
+            ''', (user_id,))
+            
+            trades = cursor.fetchall()
+            conn.close()
+            
+            if trades:
+                trade_text = "📊 **Son İşlemleriniz**\n\n"
+                for trade in trades:
+                    symbol, action, amount, price, pnl, status, created = trade
+                    pnl_text = f"{pnl:.2f} USDT" if pnl else "Beklemede"
+                    pnl_emoji = "🟢" if pnl and pnl > 0 else "🔴" if pnl and pnl < 0 else "⏳"
+                    
+                    trade_text += f"• {symbol} {action} - {amount} USDT\n"
+                    trade_text += f"  {pnl_emoji} K/Z: {pnl_text} ({status})\n\n"
+            else:
+                trade_text = "📊 **İşlem Geçmişi**\n\nHenüz işlem bulunmuyor."
+            
+        except Exception as e:
+            trade_text = f"❌ **İşlem Durumu Hatası**\n\n{str(e)}"
+        
+        await query.edit_message_text(
+            trade_text,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 Yenile", callback_data="trade_status")],
+                [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
+            ])
+        )
+    
+    async def mass_trade_all_users(self, symbol: str, source: str = "UPBIT_NEW_COIN"):
+        """Tüm aktif kullanıcılar için aynı anda işlem aç"""
+        try:
+            # Aktif kullanıcıları al
+            conn = sqlite3.connect(self.db.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute("""
+                SELECT DISTINCT u.user_id 
+                FROM users u
+                JOIN user_settings s ON u.user_id = s.user_id  
+                JOIN user_api_keys a ON u.user_id = a.user_id
+                WHERE s.auto_trading = 1 AND s.emergency_stop = 0 AND a.is_configured = 1
+            """)
+            
+            active_users = [row[0] for row in cursor.fetchall()]
+            conn.close()
+            
+            if not active_users:
+                print("📋 Mass Trading: Aktif kullanıcı bulunamadı")
+                return
+            
+            print(f"🚀 Mass Trading başlatılıyor: {symbol} for {len(active_users)} kullanıcı")
+            
+            # Her kullanıcı için threading ile paralel işlem
+            import threading
+            threads = []
+            
+            for user_id in active_users:
+                thread = threading.Thread(
+                    target=self._execute_user_trade_sync,
+                    args=(user_id, symbol, source)
+                )
+                threads.append(thread)
+                thread.start()
+            
+            # Tüm thread'lerin bitmesini bekle
+            for thread in threads:
+                thread.join()
+            
+            print(f"✅ Mass Trading tamamlandı: {symbol}")
+            
+        except Exception as e:
+            print(f"❌ Mass Trading hatası: {e}")
+    
+    def _execute_user_trade_sync(self, user_id: int, symbol: str, source: str):
+        """Tek kullanıcı için senkron trading işlemi (thread-safe)"""
+        try:
+            # Kullanıcı bazlı manuel long dosyası oluştur
+            user_dir = os.path.join("PERP", "users", str(user_id))
+            os.makedirs(user_dir, exist_ok=True)
+            
+            # Symbol'ü PERP formatına çevir
+            perp_symbol = self._map_symbol_to_bitget(symbol) or f"{symbol}USDT_UMCBL"
+            perp_file = os.path.join(user_dir, "manual_long_output.txt")
+            
+            with open(perp_file, 'w') as f:
+                f.write(perp_symbol)
+            
+            print(f"📝 User {user_id}: {symbol} → {perp_symbol} (AUTO)")
+            
+            # Bildirim ekle
+            self.db.add_notification(
+                user_id,
+                'AUTO_TRADE',
+                f'Otomatik İşlem: {symbol}',
+                f'{source} - {symbol} için otomatik long işlemi tetiklendi'
+            )
+            
+        except Exception as e:
+            print(f"❌ User {user_id} trading hatası: {e}")
+    
+    async def emergency_stop_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Emergency stop callback'i"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        settings = self.db.get_user_settings(user_id)
+        
+        emergency_text = f"""
+🚨 **ACİL DURDURMA**
+
+⚠️ **UYARI:** Bu işlem ile:
+• Tüm açık pozisyonlarınız HEMEN kapatılacak
+• Otomatik ticaret durdurulacak
+• Tüm pending işlemler iptal edilecek
+
+💰 **Mevcut Durum:**
+• İşlem Miktarı: {settings['trading_amount']} USDT
+• Otomatik Ticaret: {"Aktif" if settings['auto_trading'] else "Pasif"}
+• Emergency Stop: {"Aktif" if settings['emergency_stop'] else "Pasif"}
+
+⚠️ **GERÇEKTEN EMERGENCy STOP YAPMAK İSTİYOR MUSUN?**
+        """
+        
+        keyboard = [
+            [
+                InlineKeyboardButton("🚨 EVET, HEMEN DURDUR!", callback_data="confirm_emergency"),
+                InlineKeyboardButton("❌ İptal", callback_data="main_menu")
+            ]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await query.edit_message_text(
+            emergency_text,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=reply_markup
+        )
+    
+    async def confirm_emergency_stop(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Emergency stop onaylama ve uygulama"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        
+        try:
+            # 1. Emergency stop flag'i aktif et
+            self.db.update_user_settings(user_id, emergency_stop=True, auto_trading=False)
+            
+            # 2. Kullanıcının emergency stop dosyası oluştur
+            user_dir = os.path.join("PERP", "users", str(user_id))
+            os.makedirs(user_dir, exist_ok=True)
+            emergency_file = os.path.join(user_dir, "emergency_stop.txt")
+            
+            with open(emergency_file, 'w') as f:
+                f.write(f"EMERGENCY_STOP_{user_id}_{int(time.time())}")
+            
+            # 3. Pozisyonları kapat
+            await query.edit_message_text(
+                "🚨 **ACİL DURDURMA BAŞLATILDI!**\n\n"
+                "🔄 Pozisyonlar kapatılıyor...\n"
+                "⏳ Lütfen bekleyin...",
+                parse_mode=ParseMode.MARKDOWN
+            )
+            
+            # API anahtarlarını al ve pozisyonları kapat
+            api_keys = self.db.get_user_api_keys(user_id)
+            if api_keys and api_keys['is_configured']:
+                close_result = await self.close_user_positions(api_keys)
+                
+                if close_result['success']:
+                    final_text = f"""
+✅ **ACİL DURDURMA TAMAMLANDI!**
+
+🔐 **Uygulanan İşlemler:**
+• Tüm pozisyonlar kapatıldı
+• Otomatik ticaret durduruldu
+• Emergency stop aktif edildi
+
+💰 **Sonuç:**
+• Kapatılan Pozisyon: {close_result.get('positions_count', 0)}
+• Toplam K/Z: {close_result.get('total_pnl', 0):.2f} USDT
+
+🔄 **Yeniden Başlatmak İçin:**
+Otomatik ticareti manuel olarak açmanız gerekiyor.
+                    """
+                else:
+                    final_text = f"""
+⚠️ **ACİL DURDURMA - KISMEN BAŞARILI**
+
+🔐 **Uygulanan İşlemler:**
+• Otomatik ticaret durduruldu
+• Emergency stop aktif edildi
+
+❌ **Pozisyon Kapatma Hatası:**
+{close_result.get('error', 'Bilinmeyen hata')}
+
+💡 **Manuel kontrol edin!**
+                    """
+            else:
+                final_text = """
+⚠️ **ACİL DURDURMA - KISMEN BAŞARILI**
+
+🔐 **Uygulanan İşlemler:**
+• Otomatik ticaret durduruldu
+• Emergency stop aktif edildi
+
+❌ **API Anahtarları Bulunamadı**
+Pozisyonları manuel olarak kontrol edin.
+                """
+            
+            # Bildirim ekle
+            self.db.add_notification(
+                user_id,
+                'EMERGENCY_STOP',
+                'Acil Durdurma',
+                'Tüm işlemler durduruldu ve pozisyonlar kapatıldı'
+            )
+            
+            await query.edit_message_text(
+                final_text,
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
+                ])
+            )
+            
+        except Exception as e:
+            logger.error(f"Emergency stop error for user {user_id}: {e}")
+            await query.edit_message_text(
+                f"❌ **ACİL DURDURMA HATASI!**\n\n"
+                f"Hata: {str(e)}\n\n"
+                f"Lütfen pozisyonlarınızı manuel kontrol edin!",
+                parse_mode=ParseMode.MARKDOWN,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("🔄 Tekrar Dene", callback_data="emergency_stop")]
+                ])
+            )
+    
+    async def close_user_positions(self, api_keys):
+        """Kullanıcının pozisyonlarını kapat"""
+        try:
+            import subprocess
+            
+            # PERP/long.py'deki close_all_positions fonksiyonunu kullan
+            close_script = f"""
+import sys
+import json
+sys.path.append('PERP')
+from long import close_all_positions
+
+api_key = "{api_keys['api_key']}"
+secret_key = "{api_keys['secret_key']}"
+passphrase = "{api_keys['passphrase']}"
+
+try:
+    result = close_all_positions(api_key, secret_key, passphrase)
+    if result:
+        print("CLOSE_SUCCESS:" + json.dumps(result))
+    else:
+        print("CLOSE_ERROR:No result returned")
+except Exception as e:
+    print("CLOSE_ERROR:" + str(e))
+"""
+            
+            result = subprocess.run(
+                ["python3", "-c", close_script],
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            
+            if result.returncode == 0 and "CLOSE_SUCCESS:" in result.stdout:
+                # Parse JSON response
+                import json
+                result_json = json.loads(result.stdout.split("CLOSE_SUCCESS:")[1])
+                return {
+                    'success': True,
+                    'total_pnl': result_json.get('total_pnl', 0),
+                    'positions_count': result_json.get('positions_count', 0)
+                }
+            else:
+                error_msg = result.stderr or result.stdout or "Unknown error"
+                if "CLOSE_ERROR:" in result.stdout:
+                    error_msg = result.stdout.split("CLOSE_ERROR:")[1]
+                return {
+                    'success': False,
+                    'error': error_msg
+                }
+                
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
     async def broadcast_trade_notification(self, user_id: int, action: str, coin_symbol: str, 
                                          amount: float, price: float, trade_id: int):
         """İşlem bildirimini kullanıcıya gönder"""
@@ -1315,6 +1778,9 @@ Bu ayarlarla {text} long işlemi açmak istediğinden emin misin?
                     name = coin.get('name', '')
                     perp_symbol = coin.get('perp_symbol', '')
                     
+                    # TRIGGER MASS TRADING for all active users
+                    await self.mass_trade_all_users(symbol, f"UPBIT_NEW_COIN: {name}")
+                    
                     notification_text = f"""
 🚨 **YENİ COİN LİSTELENDİ!**
 
@@ -1323,7 +1789,8 @@ Bu ayarlarla {text} long işlemi açmak istediğinden emin misin?
 🔗 **PERP Sembol:** {perp_symbol}
 🕐 **Zaman:** {datetime.now().strftime('%H:%M:%S')}
 
-Otomatik ticaret ayarların aktifse işlem başlatılacak.
+🚀 **OTOMATIK İŞLEM BAŞLATILDI!**
+Ayarlarınıza göre tüm aktif kullanıcılara long işlemi açıldı.
                     """
                     
                     keyboard = [
@@ -1393,6 +1860,16 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await bot_instance.set_take_profit_callback(update, context)
     elif data.startswith("tp_"):
         await bot_instance.tp_selection_callback(update, context)
+    elif data == "set_leverage":
+        await bot_instance.set_leverage_callback(update, context)
+    elif data.startswith("leverage_"):
+        await bot_instance.leverage_selection_callback(update, context)
+    elif data == "toggle_auto":
+        await bot_instance.toggle_auto_trading_callback(update, context)
+    elif data == "toggle_notifications":
+        await bot_instance.toggle_notifications_callback(update, context)
+    elif data == "trade_status":
+        await bot_instance.trade_status_callback(update, context)
     elif data == "emergency_stop":
         await bot_instance.emergency_stop_callback(update, context)
     elif data == "confirm_emergency":

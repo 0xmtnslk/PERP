@@ -101,8 +101,9 @@ class TradingSystemCoordinator:
             ("Secret Manager", "secret.py", "🔐 API key yönetimi"),
             ("Upbit Monitor", os.path.join("PERP", "upbit_market_tracker.py"), "👀 Upbit yeni coin taraması"),
             ("Upbit Announcements", "upbit_announcement_scraper.py", "📢 Upbit duyuru sayfası taraması"),
-            ("Telegram Bot", "direct_trading_bot.py", "🤖 Telegram kullanıcı arayüzü"),
-            ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme")
+            ("Advanced Telegram Bot", "advanced_telegram_bot.py", "🤖 Gelişmiş Telegram kullanıcı arayüzü"),
+            ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme"),
+            ("TP Monitor", "tp_monitor.py", "📈 Take Profit monitoring sistemi")
         ]
         
         success_count = 0
@@ -119,12 +120,22 @@ class TradingSystemCoordinator:
         print(f"\n📊 {success_count}/{len(scripts)} bileşen başarıyla başlatıldı")
         
         # User trading engine'i başlat
-        print("\n✅ User Trading Engine başlatılıyor:")
+        print("\n✅ Multi-User Auto-Trading System başlatılıyor:")
         print("   - user_trading_engine.py (Çok kullanıcılı ticaret sistemi)")
-        print("   - Her kullanıcı için ayrı izolasyon")
+        print("   - advanced_telegram_bot.py (Gelişmiş kullanıcı yönetimi)")
+        print("   - tp_monitor.py (Otomatik TP monitoring)")
+        print("   - Her kullanıcı için ayrı izolasyon ve ayarlar")
         print("   - Manuel ve otomatik işlem desteği")
-        print("\n🤖 Telegram Bot: Kullanıcılar bot üzerinden API anahtarlarını ekleyebilir")
-        print("🔒 Gate.io bileşenleri pasife alındı (isteğe bağlı olarak aktifleştirilebilir)")
+        print("   - Leverage, TP%, miktar ayarları")
+        print("   - Emergency stop fonksiyonu")
+        print("\n🚀 ÖZELLIKLER:")
+        print("   💰 Kullanıcı bazlı miktar/leverage/TP ayarları")
+        print("   🚨 Upbit yeni coin → TÜM kullanıcılara otomatik alım")
+        print("   📈 TP hedefe ulaştığında otomatik satış")
+        print("   🛑 Emergency stop ile anında pozisyon kapatma")
+        print("   🔒 Şifrelenmiş API key depolama")
+        print("\n🤖 Telegram Bot: Kullanıcılar tüm ayarları bot üzerinden yapabilir")
+        print("🔒 Gate.io bileşenleri pasife alındı (sadece Bitget aktif)")
         
     def monitor_processes(self):
         """İşlemleri izle ve yeniden başlat"""

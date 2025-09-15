@@ -41,7 +41,9 @@ def load_api_credentials():
         "secret_key": os.getenv("BITGET_SECRET_KEY"), 
         "passphrase": os.getenv("BITGET_PASSPHRASE"),
         "open_USDT": os.getenv("BITGET_OPEN_USDT", "5"),
-        "close_yuzde": os.getenv("BITGET_CLOSE_YUZDE", "1.2")
+        "close_yuzde": os.getenv("BITGET_CLOSE_YUZDE", "1.2"),
+        "leverage": os.getenv("BITGET_LEVERAGE", "0"),
+        "user_id": os.getenv("USER_ID", "0")
     }
 
 def get_futures_price(symbol):
@@ -245,14 +247,20 @@ if __name__ == '__main__':
       if coin_price:
           print(f"Anlik Coin Fiyati: {coin_price['last_price']}")  # Coin fiyatini ekrana yaz
           
-          # Max leverage degerini al
-          maxLeverage = get_max_leverage(symbol)
-          if maxLeverage is None:
-              print("Max leverage alinamadi.")
-              exit()
-
-          # Max leverage degerini float'a cevir
-          maxLeverage = float(maxLeverage)
+          # Leverage değerini belirle
+          user_leverage = int(credentials.get("leverage", 0))
+          if user_leverage > 0:
+              # Kullanıcı belirli leverage ayarlamış
+              leverage = user_leverage
+              print(f"🎯 Kullanıcı leverage: {leverage}x")
+          else:
+              # Max leverage kullan
+              maxLeverage = get_max_leverage(symbol)
+              if maxLeverage is None:
+                  print("Max leverage alinamadi.")
+                  exit()
+              leverage = float(maxLeverage)
+              print(f"📊 Max leverage: {leverage}x")
 
           # Coin fiyatini %1.5 arttir
           coin_price_long = float(coin_price['last_price']) * 1.015
@@ -260,7 +268,7 @@ if __name__ == '__main__':
           # Coin boyutunu hesapla
           open_USDT = float(credentials.get("open_USDT", 1))  # Default 1 USDT - daha düşük test
           print(f"🔍 DEBUG: open_USDT={open_USDT}, maxLeverage={maxLeverage}")
-          coin_size = open_USDT * maxLeverage / float(coin_price['last_price'])
+          coin_size = open_USDT * leverage / float(coin_price['last_price'])
           print(f"🔍 DEBUG: Hesaplanan coin_size={coin_size} (floor öncesi)")
 
           # Bitget fiyat formatı: 0.01'in katları olmalı (2 decimal)

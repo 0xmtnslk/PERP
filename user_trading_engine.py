@@ -82,7 +82,7 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT trading_amount_usdt, take_profit_percentage, auto_trading, notifications, emergency_stop 
+                SELECT trading_amount_usdt, take_profit_percentage, leverage, auto_trading, notifications, emergency_stop 
                 FROM user_settings WHERE user_id = ?
             """, (user_id,))
             
@@ -93,13 +93,15 @@ class UserTradingEngine:
                 return {
                     'trading_amount': result[0],
                     'take_profit': result[1],
-                    'auto_trading': bool(result[2]),
-                    'notifications': bool(result[3]),
-                    'emergency_stop': bool(result[4])
+                    'leverage': result[2],
+                    'auto_trading': bool(result[3]),
+                    'notifications': bool(result[4]),
+                    'emergency_stop': bool(result[5])
                 }
             return {
                 'trading_amount': 50,
                 'take_profit': 500,
+                'leverage': 0,
                 'auto_trading': False,
                 'notifications': True,
                 'emergency_stop': False
@@ -110,6 +112,7 @@ class UserTradingEngine:
             return {
                 'trading_amount': 50,
                 'take_profit': 500,
+                'leverage': 0,
                 'auto_trading': False,
                 'notifications': True,
                 'emergency_stop': False
@@ -236,6 +239,7 @@ class UserTradingEngine:
             user_env['BITGET_PASSPHRASE'] = api_keys['passphrase']
             user_env['BITGET_OPEN_USDT'] = str(settings['trading_amount'])
             user_env['BITGET_CLOSE_YUZDE'] = str(settings['take_profit'] / 100 + 1)
+            user_env['BITGET_LEVERAGE'] = str(settings['leverage'])
             user_env['USER_ID'] = str(user_id)
             user_env['TRADE_TYPE'] = trade_type
             
