@@ -1,9 +1,6 @@
 {
-    "code": "00000",
-    "msg": "success",
-    "requestTime": 1757947632821,
-    "data": {
-        "clientOid": "1351495816165597190",
-        "orderId": "1351495816148819969"
-    }
+    "code": "40762",
+    "msg": "The order amount exceeds the balance",
+    "requestTime": 1757948621139,
+    "data": null
 }

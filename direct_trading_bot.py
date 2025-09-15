@@ -42,10 +42,13 @@ class DirectTradingBot:
                 
             logger.info(f"Created symbol file: {symbol_file} with {symbol}USDT_UMCBL")
             
-            # Execute the trading script directly
+            # Execute the trading script directly with environment variable
+            env = os.environ.copy()
+            env['BITGET_OPEN_USDT'] = '5'  # 5 USDT test
+            
             result = subprocess.run([
                 "python3", "PERP/long.py"
-            ], capture_output=True, text=True, timeout=60)
+            ], capture_output=True, text=True, timeout=60, env=env)
             
             logger.info(f"Trading script result: {result.returncode}")
             logger.info(f"Trading script stdout: {result.stdout}")

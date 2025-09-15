@@ -127,13 +127,15 @@ def get_max_leverage(symbol):
   return None
 
 if __name__ == '__main__':
-  # Dosya yollarini tanimla
-  BASE_DIR = os.getcwd()
-  secret_file_path = os.path.join(BASE_DIR, "PERP", "secret.json")
-  symbol_file_path = os.path.join(BASE_DIR, "PERP", "new_coin_output.txt")
-  order_id_file_path = os.path.join(BASE_DIR, "PERP", "order_id.json")
-  order_fills_file_path = os.path.join(BASE_DIR, "PERP", "order_fills.json")
-  yuzde_file_path = os.path.join(BASE_DIR, "PERP", "yuzde.json")
+  # Dosya yollarini tanimla - script konumundan bağımsız çalıştır
+  script_dir = os.path.dirname(os.path.abspath(__file__))  # PERP klasörü
+  BASE_DIR = os.path.dirname(script_dir)  # workspace klasörü 
+  
+  secret_file_path = os.path.join(script_dir, "secret.json")
+  symbol_file_path = os.path.join(script_dir, "new_coin_output.txt")
+  order_id_file_path = os.path.join(script_dir, "order_id.json")
+  order_fills_file_path = os.path.join(script_dir, "order_fills.json")
+  yuzde_file_path = os.path.join(script_dir, "yuzde.json")
   
   # API bilgilerini environment variable'lardan al
   credentials = load_api_credentials()
@@ -174,15 +176,24 @@ if __name__ == '__main__':
           coin_price_long = float(coin_price['last_price']) * 1.015
           
           # Coin boyutunu hesapla
-          open_USDT = float(credentials.get("open_USDT", 0))
+          open_USDT = float(credentials.get("open_USDT", 5))  # Default 5 USDT
+          print(f"🔍 DEBUG: open_USDT={open_USDT}, maxLeverage={maxLeverage}")
           coin_size = open_USDT * maxLeverage / float(coin_price['last_price'])
+          print(f"🔍 DEBUG: Hesaplanan coin_size={coin_size} (floor öncesi)")
 
-          # Yuvarlama hassasiyetini sabit değer olarak kullan (Gate.io bağımlılığı kaldırıldı)
-          round_gate = 4  # Varsayılan hassasiyet değeri
-
-          # Fiyati ve boyutu uygun hassasiyete yuvarla
-          coin_price_long = round(coin_price_long, round_gate)  # Dinamik hassasiyete yuvarla
-          coin_size = math.floor(coin_size) # Degeri asagi yuvarla
+          # Bitget fiyat formatı: 0.01'in katları olmalı (2 decimal)
+          coin_price_long = round(coin_price_long, 2)  # Bitget için 2 decimal
+          print(f"🔍 DEBUG: coin_price_long={coin_price_long} (2 decimal)")
+          coin_size = round(coin_size, 4)  # Floor yerine 4 decimal'e yuvarla (Bitget için uygun)
+          print(f"🔍 DEBUG: Final coin_size={coin_size}")
+          
+          # Size 0 kontrolü ekle
+          if coin_size <= 0:
+              print(f"❌ HATA: Coin size 0 veya negatif: {coin_size}")
+              print(f"   open_USDT: {open_USDT}")
+              print(f"   maxLeverage: {maxLeverage}")  
+              print(f"   coin_price: {coin_price['last_price']}")
+              exit(1)
  
 
           # POST istegi icin imza olusturma
@@ -217,9 +228,13 @@ if __name__ == '__main__':
           # Order ID'yi dosyaya kaydet
           save_order_id_to_file(post_response, order_id_file_path)
 
-          # Order ID'yi degiskene ata
-          order_id = post_response.get('data', {}).get('orderId')
-          print(f"Order ID: {order_id}")
+          # Order ID'yi degiskene ata - hata kontrolü ekle
+          if post_response.get('code') == '00000' and post_response.get('data'):
+              order_id = post_response['data'].get('orderId')
+              print(f"Order ID: {order_id}")
+          else:
+              print(f"❌ İşlem hatası: {post_response.get('msg', 'Bilinmeyen hata')}")
+              exit(1)
 
           # GET istegi icin imza olusturma
           timestamp = str(get_timestamp())  # Zaman damgasini guncelle
