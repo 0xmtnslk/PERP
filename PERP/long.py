@@ -40,7 +40,7 @@ def load_api_credentials():
         "api_key": os.getenv("BITGET_API_KEY"),
         "secret_key": os.getenv("BITGET_SECRET_KEY"), 
         "passphrase": os.getenv("BITGET_PASSPHRASE"),
-        "open_USDT": os.getenv("BITGET_OPEN_USDT", "1"),
+        "open_USDT": os.getenv("BITGET_OPEN_USDT", "5"),
         "close_yuzde": os.getenv("BITGET_CLOSE_YUZDE", "1.2")
     }
 

@@ -102,6 +102,7 @@ class DirectTradingBot:
                 await query.edit_message_text(
                     f"⏳ İşlem başlatılıyor...\n\n"
                     f"🪙 Coin: {symbol}\n"
+                    f"💰 Miktar: 5 USDT (Test)\n"
                     f"🔄 Bitget API'ye gönderiliyor...",
                     reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Yeni İşlem", callback_data="manual_trade")]])
                 )
@@ -113,6 +114,7 @@ class DirectTradingBot:
                     await query.edit_message_text(
                         f"🎉 İşlem Başarılı!\n\n"
                         f"🪙 Coin: {symbol}\n"
+                        f"💰 Miktar: 5 USDT\n"
                         f"✅ Bitget'te açıldı\n"
                         f"📊 Sonuç: İşlem tamamlandı\n\n"
                         f"Detaylar: {stdout[:100]}...",
