@@ -242,6 +242,7 @@ class UserTradingEngine:
             user_env['BITGET_LEVERAGE'] = str(settings['leverage'])
             user_env['USER_ID'] = str(user_id)
             user_env['TRADE_TYPE'] = trade_type
+            user_env['TRADE_SYMBOL'] = symbol
             
             # Create user-specific symbol file
             user_dir = os.path.join(self.users_dir, str(user_id))
@@ -263,6 +264,7 @@ class UserTradingEngine:
                 cwd=self.BASE_DIR
             )
             
+            logger.info(f"Leverage script output for user {user_id}: {result.stdout}")
             if result.returncode != 0:
                 logger.error(f"Leverage script failed for user {user_id}: {result.stderr}")
                 return
@@ -278,6 +280,7 @@ class UserTradingEngine:
                 cwd=self.BASE_DIR
             )
             
+            logger.info(f"Long script output for user {user_id}: {result.stdout}")
             if result.returncode == 0:
                 logger.info(f"Trade executed successfully for user {user_id}: {symbol}")
                 # İşlem başarılı - Telegram bildirimi gönder
