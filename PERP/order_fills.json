@@ -1,23 +1,39 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1757944192461,
+    "requestTime": 1757947633341,
     "data": [
         {
-            "tradeId": "1351481383352160259",
+            "tradeId": "1351495816367460432",
             "symbol": "SYRUPUSDT_UMCBL",
-            "orderId": "1351481383108354049",
-            "price": "0.4463",
-            "sizeQty": "440",
-            "fee": "-0.1178232",
+            "orderId": "1351495816148819969",
+            "price": "0.4500",
+            "sizeQty": "90",
+            "fee": "-0.0243",
             "side": "open_long",
-            "fillAmount": "196.372",
+            "fillAmount": "40.5",
             "profit": "0",
             "enterPointSource": "API",
             "tradeSide": "open_long",
             "holdMode": "double_hold",
             "takerMakerFlag": "taker",
-            "cTime": "1757944191778"
+            "cTime": "1757947632877"
+        },
+        {
+            "tradeId": "1351495816367460430",
+            "symbol": "SYRUPUSDT_UMCBL",
+            "orderId": "1351495816148819969",
+            "price": "0.4500",
+            "sizeQty": "130",
+            "fee": "-0.0351",
+            "side": "open_long",
+            "fillAmount": "58.5",
+            "profit": "0",
+            "enterPointSource": "API",
+            "tradeSide": "open_long",
+            "holdMode": "double_hold",
+            "takerMakerFlag": "taker",
+            "cTime": "1757947632877"
         }
     ]
 }
