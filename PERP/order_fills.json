@@ -1,39 +1,23 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1757948801346,
+    "requestTime": 1757949026644,
     "data": [
         {
-            "tradeId": "1351500715352281117",
-            "symbol": "SYRUPUSDT_UMCBL",
-            "orderId": "1351500715137835011",
-            "price": "0.4439",
-            "sizeQty": "60",
-            "fee": "-0.0159804",
+            "tradeId": "1351501660761071619",
+            "symbol": "ETHUSDT_UMCBL",
+            "orderId": "1351501660492013569",
+            "price": "4503.92",
+            "sizeQty": "0.02",
+            "fee": "-0.05404704",
             "side": "open_long",
-            "fillAmount": "26.634",
+            "fillAmount": "90.0784",
             "profit": "0",
             "enterPointSource": "API",
             "tradeSide": "open_long",
             "holdMode": "double_hold",
             "takerMakerFlag": "taker",
-            "cTime": "1757948800886"
-        },
-        {
-            "tradeId": "1351500715352281107",
-            "symbol": "SYRUPUSDT_UMCBL",
-            "orderId": "1351500715137835011",
-            "price": "0.4439",
-            "sizeQty": "160",
-            "fee": "-0.0426144",
-            "side": "open_long",
-            "fillAmount": "71.024",
-            "profit": "0",
-            "enterPointSource": "API",
-            "tradeSide": "open_long",
-            "holdMode": "double_hold",
-            "takerMakerFlag": "taker",
-            "cTime": "1757948800886"
+            "cTime": "1757949026289"
         }
     ]
 }

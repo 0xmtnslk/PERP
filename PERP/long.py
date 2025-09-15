@@ -176,7 +176,7 @@ if __name__ == '__main__':
           coin_price_long = float(coin_price['last_price']) * 1.015
           
           # Coin boyutunu hesapla
-          open_USDT = float(credentials.get("open_USDT", 5))  # Default 5 USDT
+          open_USDT = float(credentials.get("open_USDT", 1))  # Default 1 USDT - daha düşük test
           print(f"🔍 DEBUG: open_USDT={open_USDT}, maxLeverage={maxLeverage}")
           coin_size = open_USDT * maxLeverage / float(coin_price['last_price'])
           print(f"🔍 DEBUG: Hesaplanan coin_size={coin_size} (floor öncesi)")

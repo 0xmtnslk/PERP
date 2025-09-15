@@ -61,7 +61,7 @@ class DirectTradingBot:
             
             # Execute the trading script directly with environment variable
             env = os.environ.copy()
-            env['BITGET_OPEN_USDT'] = '5'  # 5 USDT test
+            env['BITGET_OPEN_USDT'] = '1'  # 1 USDT test - daha düşük
             
             result = subprocess.run([
                 "python3", "PERP/long.py"
@@ -139,7 +139,7 @@ class DirectTradingBot:
                 await query.edit_message_text(
                     f"⏳ İşlem başlatılıyor...\n\n"
                     f"🪙 Coin: {symbol}\n"
-                    f"💰 Miktar: 5 USDT (Test)\n"
+                    f"💰 Miktar: 1 USDT (Test)\n"
                     f"🔄 Bitget API'ye gönderiliyor...",
                     reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔄 Yeni İşlem", callback_data="manual_trade")]])
                 )
@@ -151,7 +151,7 @@ class DirectTradingBot:
                     await query.edit_message_text(
                         f"🎉 İşlem Başarılı!\n\n"
                         f"🪙 Coin: {symbol}\n"
-                        f"💰 Miktar: 5 USDT\n"
+                        f"💰 Miktar: 1 USDT\n"
                         f"✅ Bitget'te açıldı\n"
                         f"📊 Sonuç: İşlem tamamlandı\n\n"
                         f"Detaylar: {stdout[:100]}...",
