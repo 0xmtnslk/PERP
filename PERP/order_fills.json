@@ -1,23 +1,39 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1757949817593,
+    "requestTime": 1757950028459,
     "data": [
         {
-            "tradeId": "1351504977440927816",
-            "symbol": "DOGEUSDT_UMCBL",
-            "orderId": "1351504977217593345",
-            "price": "0.26246",
-            "sizeQty": "285",
-            "fee": "-0.04488066",
+            "tradeId": "1351505862560215045",
+            "symbol": "DYMUSDT_UMCBL",
+            "orderId": "1351505862341566465",
+            "price": "0.2144",
+            "sizeQty": "86.2",
+            "fee": "-0.01108876",
             "side": "open_long",
-            "fillAmount": "74.8011",
+            "fillAmount": "18.4812",
             "profit": "0",
             "enterPointSource": "API",
             "tradeSide": "open_long",
             "holdMode": "double_hold",
             "takerMakerFlag": "taker",
-            "cTime": "1757949817047"
+            "cTime": "1757950028076"
+        },
+        {
+            "tradeId": "1351505862560215043",
+            "symbol": "DYMUSDT_UMCBL",
+            "orderId": "1351505862341566465",
+            "price": "0.2143",
+            "sizeQty": "147.2",
+            "fee": "-0.01892697",
+            "side": "open_long",
+            "fillAmount": "31.5449",
+            "profit": "0",
+            "enterPointSource": "API",
+            "tradeSide": "open_long",
+            "holdMode": "double_hold",
+            "takerMakerFlag": "taker",
+            "cTime": "1757950028076"
         }
     ]
 }
