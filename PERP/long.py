@@ -291,16 +291,9 @@ if __name__ == '__main__':
                   print("Hedef gerceklesti, pozisyon kapatiliyor...")
                   close_all_positions(API_KEY, API_SECRET_KEY, PASS_PHRASE)
               else:
-                  while True:
-                      time.sleep(1)  # 1 saniye bekle
-                      coin_info = get_futures_price(symbol)
-                      if coin_info:
-                          print(f"Son Fiyat: {coin_info['last_price']}")
-                          yuzde = round(float(coin_info['last_price']) / fills_price, 3)
-                          if yuzde >= close_yuzde:
-                              print("Hedef gerceklesti, pozisyon kapatiliyor...")
-                              close_all_positions(API_KEY, API_SECRET_KEY, PASS_PHRASE)
-                              break
+                  # Test için infinite loop'u kaldır, sadece işlem aç ve çık
+                  print(f"İşlem açıldı, target: {close_yuzde}x")
+                  print("Test modunda - infinite loop devre dışı")
           else:
               print("Coin fiyat bilgisi alinamadi.")
       else:

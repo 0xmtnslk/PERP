@@ -36,7 +36,7 @@ class DirectTradingBot:
         """Execute trade directly using PERP/long.py with environment variables"""
         try:
             # Create symbol file for PERP/long.py  
-            symbol_file = "new_coin_output.txt"
+            symbol_file = "PERP/new_coin_output.txt"
             with open(symbol_file, "w") as f:
                 f.write(f"{symbol}USDT_UMCBL")
                 
@@ -45,7 +45,7 @@ class DirectTradingBot:
             # Execute the trading script directly
             result = subprocess.run([
                 "python3", "PERP/long.py"
-            ], capture_output=True, text=True, timeout=30)
+            ], capture_output=True, text=True, timeout=60)
             
             logger.info(f"Trading script result: {result.returncode}")
             logger.info(f"Trading script stdout: {result.stdout}")
