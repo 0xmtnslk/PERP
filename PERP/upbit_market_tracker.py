@@ -92,13 +92,22 @@ def main():
               old_data = read_from_file("upbit_ciftler_2.json")
               save_to_file(new_data, "upbit_ciftler_1.json")
 
-          # Yeni ciftleri bul
-          new_pairs = [pair for pair in new_data if pair not in old_data and pair['market'].startswith('USDT-')]
-          if new_pairs:
-              # Sadece USDT paritesi olan yeni ciftleri ekle
+          # Yeni ciftleri bul - sadece USDT marketleri kontrol et
+          old_usdt_markets = [pair['market'] for pair in old_data if pair['market'].startswith('USDT-')]
+          new_usdt_markets = [pair['market'] for pair in new_data if pair['market'].startswith('USDT-')]
+          
+          # Gerçekten yeni olan marketleri bul
+          truly_new_markets = [market for market in new_usdt_markets if market not in old_usdt_markets]
+          
+          if truly_new_markets:
+              # Yeni market'ların full data'sını al
+              new_pairs = [pair for pair in new_data if pair['market'] in truly_new_markets]
               append_new_pairs_to_file([new_pairs[-1]])
-              print(f"{datetime.now()}: Yeni ciftler tespit edildi ve kaydedildi")
-              print("Yeni eklenen ciftler:", new_pairs)
+              print(f"{datetime.now()}: YENİ COIN TESPİT EDİLDİ!")
+              print(f"Yeni eklenen ciftler: {[p['market'] for p in new_pairs]}")
+          else:
+              # Debug için - hangi marketler var kontrol et
+              print(f"{datetime.now()}: Kontrol - USDT marketleri: {len(new_usdt_markets)} (yeni yok)")
 
           # Toggle degiskenini degistir
           toggle = not toggle
