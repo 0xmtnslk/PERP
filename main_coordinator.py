@@ -183,8 +183,10 @@ class TradingSystemCoordinator:
     def status_report(self):
         """Durum raporu"""
         while self.running:
-            active_count = len([p for p in self.processes.values() if p.poll() is None])
-            print(f"📊 Sistem Durumu: {active_count}/{len(self.processes)} aktif script")
+            # Thread safe kopyasını al
+            processes_copy = dict(self.processes)
+            active_count = len([p for p in processes_copy.values() if p.poll() is None])
+            print(f"📊 Sistem Durumu: {active_count}/{len(processes_copy)} aktif script")
             
             # API key durumu (Sadece Bitget)
             bitget_ready = self.check_api_keys()
