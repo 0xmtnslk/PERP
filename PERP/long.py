@@ -332,7 +332,7 @@ if __name__ == '__main__':
           
           params = {
               "symbol": api_symbol,
-              "productType": "umcbl",
+              "productType": "USDT-FUTURES",
               "marginMode": "crossed",
               "marginCoin": "USDT",
               "size": coin_size,
