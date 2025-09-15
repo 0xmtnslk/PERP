@@ -496,32 +496,32 @@ class UpbitAnnouncementScraper:
                                             'triggered': True
                                         }]
                                         self.save_new_coins(coin_data)
-                                    
-                                    # Telegram bot için bildirim dosyası oluştur
-                                    notification_data = {
-                                        "type": "NEW_COIN",
-                                        "timestamp": datetime.now().isoformat(),
-                                        "coins": []
-                                    }
-                                    
-                                    for symbol in symbols:
-                                        notification_data["coins"].append({
-                                            "symbol": symbol,
-                                            "name": announcement['title'],
-                                            "price": 0.0,  # Fiyat bilgisi için ayrı API call gerekebilir
-                                            "perp_symbol": symbol + "USDT_UMCBL"
-                                        })
-                                    
-                                    # Telegram bot için bildirim dosyası oluştur (centralized config)
-                                    telegram_notification_file = notification_config.telegram_notifications_file
-                                    try:
-                                        with open(telegram_notification_file, 'w') as f:
-                                            json.dump(notification_data, f, indent=2, ensure_ascii=False)
-                                        print(f"📱 Telegram bildirimi hazırlandı (centralized): {len(symbols)} coin")
-                                        print(f"   📁 Path: {telegram_notification_file}")
-                                    except Exception as e:
-                                        print(f"⚠️ Telegram bildirimi oluşturma hatası: {e}")
-                                    
+                                        
+                                        # Telegram bot için bildirim dosyası oluştur
+                                        notification_data = {
+                                            "type": "NEW_COIN",
+                                            "timestamp": datetime.now().isoformat(),
+                                            "coins": []
+                                        }
+                                        
+                                        for symbol in symbols:
+                                            notification_data["coins"].append({
+                                                "symbol": symbol,
+                                                "name": announcement['title'],
+                                                "price": 0.0,  # Fiyat bilgisi için ayrı API call gerekebilir
+                                                "perp_symbol": symbol + "USDT_UMCBL"
+                                            })
+                                        
+                                        # Telegram bot için bildirim dosyası oluştur (centralized config)
+                                        telegram_notification_file = notification_config.telegram_notifications_file
+                                        try:
+                                            with open(telegram_notification_file, 'w') as f:
+                                                json.dump(notification_data, f, indent=2, ensure_ascii=False)
+                                            print(f"📱 Telegram bildirimi hazırlandı (centralized): {len(symbols)} coin")
+                                            print(f"   📁 Path: {telegram_notification_file}")
+                                        except Exception as e:
+                                            print(f"⚠️ Telegram bildirimi oluşturma hatası: {e}")
+                                        
                                         print(f"🎯 OTOMASYON TETİKLENDİ: {main_symbol}")
                                         
                                     except Exception as e:
