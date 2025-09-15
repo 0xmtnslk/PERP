@@ -28,3 +28,7 @@ args = "python3 main_coordinator.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[deployment]
+deploymentTarget = "vm"
+run = ["python3", "main_coordinator.py"]
