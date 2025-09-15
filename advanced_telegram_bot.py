@@ -831,22 +831,38 @@ Emin misin?
             emergency_stop=True
         )
         
-        # Sistem environment variable'larını temizle
-        os.environ.pop('BITGET_API_KEY', None)
-        os.environ.pop('BITGET_SECRET_KEY', None)
-        os.environ.pop('BITGET_PASSPHRASE', None)
+        # Kullanıcının API anahtarlarını al
+        api_keys = self.db.get_user_api_keys(user_id)
         
-        # Pozisyon kapatma scriptini çalıştır
-        try:
-            result = subprocess.run(
-                ["python3", "PERP/kapat.py"],
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            print(f"Acil durdurma sonucu: {result.returncode}")
-        except Exception as e:
-            print(f"Acil durdurma hatası: {e}")
+        if api_keys and api_keys['is_configured']:
+            # Kullanıcı bazlı emergency stop dosyası oluştur
+            user_dir = os.path.join(os.path.dirname(__file__), "PERP", "users", str(user_id))
+            os.makedirs(user_dir, exist_ok=True)
+            emergency_file = os.path.join(user_dir, "emergency_stop.txt")
+            
+            with open(emergency_file, 'w') as f:
+                f.write("EMERGENCY_STOP")
+            
+            # Kullanıcı bazlı environment ile pozisyon kapatma scriptini çalıştır
+            try:
+                user_env = os.environ.copy()
+                user_env['BITGET_API_KEY'] = api_keys['api_key']
+                user_env['BITGET_SECRET_KEY'] = api_keys['secret_key'] 
+                user_env['BITGET_PASSPHRASE'] = api_keys['passphrase']
+                user_env['USER_ID'] = str(user_id)
+                
+                result = subprocess.run(
+                    ["python3", "PERP/kapat.py"],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                    env=user_env
+                )
+                print(f"Acil durdurma sonucu (User {user_id}): {result.returncode}")
+            except Exception as e:
+                print(f"Acil durdurma hatası (User {user_id}): {e}")
+        else:
+            print(f"User {user_id} için API anahtarları bulunamadı")
         
         await query.edit_message_text(
             "🚨 **ACİL DURDURMA TAMAMLANDI**\n\n"
@@ -1011,9 +1027,13 @@ Bu ayarlarla long işlemi açmak istediğinden emin misin?
         settings = self.db.get_user_settings(user_id)
         
         try:
-            # Manuel long işlemi dosyasını oluştur
+            # Kullanıcı bazlı dizin oluştur
+            user_dir = os.path.join(os.path.dirname(__file__), "PERP", "users", str(user_id))
+            os.makedirs(user_dir, exist_ok=True)
+            
+            # Manuel long işlemi dosyasını kullanıcı bazlı oluştur
             perp_symbol = f"{coin_symbol}USDT_UMCBL"
-            perp_file = os.path.join(os.path.dirname(__file__), "PERP", "new_coin_output.txt")
+            perp_file = os.path.join(user_dir, "manual_long_output.txt")
             
             with open(perp_file, 'w') as f:
                 f.write(perp_symbol)
