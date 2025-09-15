@@ -21,7 +21,7 @@ def handle_new_coin_message(message) -> bool:
     try:
         symbol = message.data.get('symbol', '')
         if symbol:
-            json_file_path = notification_config.new_coin_json_file
+            json_file_path = notification_config.new_coin_output_json
             write_symbol_to_json(symbol, json_file_path)
             print(f"🔄 IPC ile alınan sembol JSON'a yazıldı: {symbol}")
             return True
@@ -33,7 +33,7 @@ def handle_new_coin_message(message) -> bool:
 def main():
     BASE_DIR = os.getcwd()
     text_file_path = notification_config.new_coin_output_txt
-    json_file_path = notification_config.new_coin_json_file
+    json_file_path = notification_config.new_coin_output_json
     
     # IPC handler kaydet
     ipc_queue.register_handler(MessageType.NEW_COIN_ALERT, handle_new_coin_message)
