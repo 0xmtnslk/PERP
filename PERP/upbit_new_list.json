@@ -208,5 +208,15 @@
                 "english_name": "Maple Finance"
             }
         ]
+    },
+    {
+        "timestamp": "2025-09-15T14:32:14.184260",
+        "new_pairs": [
+            {
+                "market": "USDT-SYRUP",
+                "korean_name": "메이플파이낸스",
+                "english_name": "Maple Finance"
+            }
+        ]
     }
 ]
