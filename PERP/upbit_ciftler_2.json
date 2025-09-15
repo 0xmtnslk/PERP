@@ -655,6 +655,11 @@
         "english_name": "Cosmos"
     },
     {
+        "market": "USDT-AVNT",
+        "korean_name": "아반티스",
+        "english_name": "Avantis"
+    },
+    {
         "market": "BTC-USDC",
         "korean_name": "유에스디코인",
         "english_name": "USD Coin"
@@ -1260,6 +1265,11 @@
         "english_name": "Ark"
     },
     {
+        "market": "KRW-AVNT",
+        "korean_name": "아반티스",
+        "english_name": "Avantis"
+    },
+    {
         "market": "BTC-SUN",
         "korean_name": "썬",
         "english_name": "SUN"
@@ -1773,6 +1783,11 @@
         "market": "KRW-PYTH",
         "korean_name": "피스네트워크",
         "english_name": "Pyth Network"
+    },
+    {
+        "market": "BTC-AVNT",
+        "korean_name": "아반티스",
+        "english_name": "Avantis"
     },
     {
         "market": "USDT-XLM",
