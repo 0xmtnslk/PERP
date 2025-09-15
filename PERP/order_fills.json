@@ -1,23 +1,23 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1757949088161,
+    "requestTime": 1757949137042,
     "data": [
         {
-            "tradeId": "1351501918698098735",
-            "symbol": "SOLUSDT_UMCBL",
-            "orderId": "1351501918487846921",
-            "price": "233.300",
-            "sizeQty": "0.4",
-            "fee": "-0.055992",
+            "tradeId": "1351502123443134471",
+            "symbol": "ETHUSDT_UMCBL",
+            "orderId": "1351502123182465025",
+            "price": "4505.88",
+            "sizeQty": "0.02",
+            "fee": "-0.05407056",
             "side": "open_long",
-            "fillAmount": "93.32",
+            "fillAmount": "90.1176",
             "profit": "0",
             "enterPointSource": "API",
             "tradeSide": "open_long",
             "holdMode": "double_hold",
             "takerMakerFlag": "taker",
-            "cTime": "1757949087786"
+            "cTime": "1757949136601"
         }
     ]
 }
