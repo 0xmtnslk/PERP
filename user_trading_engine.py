@@ -46,7 +46,7 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT bitget_api_key, bitget_secret_key, bitget_passphrase, is_configured 
+                SELECT api_key, secret_key, passphrase, is_configured 
                 FROM user_api_keys WHERE user_id = ?
             """, (user_id,))
             
@@ -54,11 +54,11 @@ class UserTradingEngine:
             conn.close()
             
             if result:
-                # Decrypt the API keys
+                # API keys are stored as plain text for now
                 try:
-                    api_key = self.cipher.decrypt(result[0].encode()).decode() if result[0] else ""
-                    secret_key = self.cipher.decrypt(result[1].encode()).decode() if result[1] else ""
-                    passphrase = self.cipher.decrypt(result[2].encode()).decode() if result[2] else ""
+                    api_key = result[0] if result[0] else ""
+                    secret_key = result[1] if result[1] else ""
+                    passphrase = result[2] if result[2] else ""
                     
                     return {
                         'api_key': api_key,
@@ -67,7 +67,7 @@ class UserTradingEngine:
                         'is_configured': bool(result[3])
                     }
                 except Exception as e:
-                    logger.error(f"Error decrypting API keys for user {user_id}: {e}")
+                    logger.error(f"Error getting API keys for user {user_id}: {e}")
                     return None
             return None
             
@@ -82,7 +82,7 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT trading_amount_usdt, take_profit_percentage, leverage, auto_trading, notifications, emergency_stop 
+                SELECT amount_usdt, take_profit_percent, leverage, auto_trading, active, emergency_stop 
                 FROM user_settings WHERE user_id = ?
             """, (user_id,))
             
@@ -125,15 +125,15 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT DISTINCT u.user_id 
-                FROM users u
-                JOIN user_settings s ON u.user_id = s.user_id  
-                JOIN user_api_keys a ON u.user_id = a.user_id
-                WHERE s.auto_trading = 1 AND s.emergency_stop = 0 AND a.is_configured = 1
+                SELECT DISTINCT s.user_id 
+                FROM user_settings s 
+                JOIN user_api_keys a ON s.user_id = a.user_id
+                WHERE s.auto_trading = 1 AND IFNULL(s.emergency_stop,0) = 0 AND IFNULL(a.is_configured,0) = 1
             """)
             
             users = [row[0] for row in cursor.fetchall()]
             conn.close()
+            logger.info(f"Active users for auto trading: {users}")
             return users
             
         except Exception as e:
