@@ -1605,6 +1605,11 @@
         "english_name": "Arkham"
     },
     {
+        "market": "KRW-ZKC",
+        "korean_name": "바운드리스",
+        "english_name": "Boundless"
+    },
+    {
         "market": "BTC-SONIC",
         "korean_name": "소닉SVM",
         "english_name": "Sonic SVM"
@@ -1645,6 +1650,11 @@
         "english_name": "Magic Eden"
     },
     {
+        "market": "BTC-ZKC",
+        "korean_name": "바운드리스",
+        "english_name": "Boundless"
+    },
+    {
         "market": "KRW-DRIFT",
         "korean_name": "드리프트",
         "english_name": "Drift"
@@ -1658,6 +1668,11 @@
         "market": "KRW-FCT2",
         "korean_name": "피르마체인",
         "english_name": "FirmaChain"
+    },
+    {
+        "market": "USDT-ZKC",
+        "korean_name": "바운드리스",
+        "english_name": "Boundless"
     },
     {
         "market": "USDT-SAHARA",
