@@ -101,7 +101,7 @@ class TradingSystemCoordinator:
             ("Secret Manager", "secret.py", "🔐 API key yönetimi"),
             ("Upbit Monitor", os.path.join("PERP", "upbit_market_tracker.py"), "👀 Upbit yeni coin taraması"),
             ("Upbit Announcements", "upbit_announcement_scraper.py", "📢 Upbit duyuru sayfası taraması"),
-            ("Telegram Bot", "final_bot.py", "🤖 Telegram kullanıcı arayüzü"),
+            ("Telegram Bot", "simple_bot.py", "🤖 Telegram kullanıcı arayüzü"),
             ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme")
         ]
         
