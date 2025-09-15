@@ -265,11 +265,48 @@ if __name__ == '__main__':
           # Coin fiyatini %1.5 arttir
           coin_price_long = float(coin_price['last_price']) * 1.015
           
-          # Coin boyutunu hesapla
-          open_USDT = float(credentials.get("open_USDT", 1))  # Default 1 USDT - daha düşük test
-          print(f"🔍 DEBUG: open_USDT={open_USDT}, maxLeverage={maxLeverage}")
-          coin_size = open_USDT * leverage / float(coin_price['last_price'])
-          print(f"🔍 DEBUG: Hesaplanan coin_size={coin_size} (floor öncesi)")
+          # REAL-TIME BALANCE CHECK (Architect's fix)
+          print("🔍 Fetching real-time available balance...")
+          balance_timestamp = str(get_timestamp())
+          balance_request_path = "/api/v2/mix/account/accounts"
+          balance_params = {"productType": "umcbl"}
+          balance_request_path += parse_params_to_str(balance_params)
+          balance_sign = create_signature(pre_hash(balance_timestamp, "GET", balance_request_path, ""), API_SECRET_KEY)
+          
+          balance_headers = {
+              "ACCESS-KEY": API_KEY,
+              "ACCESS-SIGN": balance_sign,
+              "ACCESS-PASSPHRASE": PASS_PHRASE,
+              "ACCESS-TIMESTAMP": balance_timestamp,
+              "Content-Type": "application/json"
+          }
+          balance_url = "https://api.bitget.com" + balance_request_path
+          balance_response = requests.get(balance_url, headers=balance_headers)
+          print(f"🔍 Balance API Response: {balance_response.json()}")
+          
+          balance_data = balance_response.json()
+          if balance_data.get('code') == '00000' and balance_data.get('data'):
+              available_usdt = float(balance_data['data']['available'])
+              print(f"💰 Available USDT: {available_usdt}")
+              
+              # Apply safety buffer (0.985) for fees/slippage
+              usable_usdt = available_usdt * 0.985
+              print(f"💰 Usable USDT (with buffer): {usable_usdt}")
+              
+              # Coin boyutunu hesapla - use SMALLER amount
+              configured_open_USDT = float(credentials.get("open_USDT", 1))
+              actual_open_USDT = min(configured_open_USDT, usable_usdt)
+              print(f"🔍 Configured: {configured_open_USDT}, Available: {usable_usdt}, Using: {actual_open_USDT}")
+              
+              if actual_open_USDT < 0.5:  # Minimum threshold
+                  print(f"❌ INSUFFICIENT BALANCE: Only {actual_open_USDT} USDT available")
+                  exit(1)
+                  
+              coin_size = actual_open_USDT * leverage / float(coin_price['last_price'])
+              print(f"🔍 SAFE coin_size={coin_size} (balance-checked)")
+          else:
+              print(f"❌ Balance check failed: {balance_data}")
+              exit(1)
 
           # Bitget fiyat formatı: 0.01'in katları olmalı (2 decimal)
           coin_price_long = round(coin_price_long, 2)  # Bitget için 2 decimal
@@ -286,17 +323,23 @@ if __name__ == '__main__':
               exit(1)
  
 
-          # POST istegi icin imza olusturma
+          # POST istegi icin imza olusturma - NEW API V2 + MARKET ORDER
           timestamp = str(get_timestamp())
-          request_path = "/api/mix/v1/order/placeOrder"
+          request_path = "/api/v2/mix/order/place-order"
+          # V2 API: Remove _UMCBL suffix from symbol (per release notes)
+          api_symbol = symbol.replace("_UMCBL", "")
+          print(f"🔧 V2 API Symbol: {symbol} → {api_symbol}")
+          
           params = {
-              "symbol": symbol,
+              "symbol": api_symbol,
+              "productType": "umcbl",
+              "marginMode": "crossed",
               "marginCoin": "USDT",
-              "price": coin_price_long,
               "size": coin_size,
-              "side": "open_long",
-              "orderType": "limit",
-              "timeInForceValue": "normal"
+              "side": "buy",
+              "tradeSide": "open",
+              "orderType": "market",
+              "clientOid": f"auto_trade_{get_timestamp()}"
           }
           body = json.dumps(params)
           post_sign = create_signature(pre_hash(timestamp, "POST", request_path, body), API_SECRET_KEY)
