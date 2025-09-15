@@ -118,9 +118,11 @@ class TradingSystemCoordinator:
         
         print(f"\n📊 {success_count}/{len(scripts)} bileşen başarıyla başlatıldı")
         
-        # Ana ticaret scriptlerini daha sonra başlat (API keyler gerekli)
-        print("\n⚠️ Ana ticaret scripti API anahtarları girildikten sonra başlatılacak:")
-        print("   - bitget_perp_order.py (Bitget otomasyonu)")
+        # User trading engine'i başlat
+        print("\n✅ User Trading Engine başlatılıyor:")
+        print("   - user_trading_engine.py (Çok kullanıcılı ticaret sistemi)")
+        print("   - Her kullanıcı için ayrı izolasyon")
+        print("   - Manuel ve otomatik işlem desteği")
         print("\n🤖 Telegram Bot: Kullanıcılar bot üzerinden API anahtarlarını ekleyebilir")
         print("🔒 Gate.io bileşenleri pasife alındı (isteğe bağlı olarak aktifleştirilebilir)")
         
@@ -136,30 +138,23 @@ class TradingSystemCoordinator:
             time.sleep(10)  # 10 saniyede bir kontrol
     
     def check_api_keys(self):
-        """API anahtarlarını kontrol et (Sadece Bitget)"""
+        """User trading engine için API key kontrolü gerekmiyor (DB'den alınıyor)"""
         try:
-            # Environment variable'lardan kontrol et
-            bitget_ready = all([
-                os.getenv("BITGET_API_KEY"),
-                os.getenv("BITGET_SECRET_KEY"),
-                os.getenv("BITGET_PASSPHRASE")
-            ])
-            
-            return bitget_ready
+            # User trading engine kullanıcı bazlı API key'leri DB'den alır
+            # Global environment variable kontrolü gerekmiyor
+            return True
             
         except Exception as e:
             print(f"❌ API key kontrol hatası: {e}")
             return False
     
     def start_trading_scripts(self):
-        """Ana ticaret scriptini başlat (Sadece Bitget)"""
-        bitget_ready = self.check_api_keys()
-        
-        if bitget_ready:
-            print("🟢 Bitget API anahtarları tamam, otomasyon başlatılıyor...")
-            self.start_script("Bitget Trading", "bitget_perp_order.py")
-        else:
-            print("🔴 Bitget API anahtarları eksik")
+        """User-aware trading engine'i başlat"""
+        print("🟢 User Trading Engine başlatılıyor...")
+        print("   - Çok kullanıcılı izolasyon desteği")
+        print("   - Kullanıcı bazlı API key yönetimi")
+        print("   - Manuel + otomatik işlem desteği")
+        self.start_script("User Trading Engine", "user_trading_engine.py")
     
     def signal_handler(self, signum, frame):
         """Sinyal yakalayıcı"""
