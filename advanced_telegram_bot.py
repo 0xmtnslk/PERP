@@ -1242,22 +1242,28 @@ async def periodic_notification_check(context: ContextTypes.DEFAULT_TYPE):
 def main():
     """Telegram bot'u başlat"""
     
-    # Bot token kontrolü
+    # Bot token kontrolü - SADECE environment variable'dan al
     BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     if not BOT_TOKEN:
         print("❌ TELEGRAM_BOT_TOKEN environment variable tanımlanmamış!")
         print("⚠️ Bot token'ını environment variable olarak ekleyin.")
-        print("ℹ️ Bot bildirim sistemi pasif modda çalışacak...")
-        
-        # Token olmadan çalışabilir ama bildirim gönderemez
-        while True:
-            try:
-                time.sleep(60)
-                print("💤 TELEGRAM_BOT_TOKEN bekleniyor...")
-            except KeyboardInterrupt:
-                print("\n👋 Bot durduruldu")
-                break
-        return
+        raise SystemExit("TELEGRAM_BOT_TOKEN environment variable gerekli!")
+    
+    # Token doğrulaması - hangi bot olduğunu kontrol et
+    try:
+        import requests
+        response = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getMe")
+        if response.status_code == 200:
+            bot_info = response.json()['result']
+            print(f"🤖 Bot doğrulandı: {bot_info['first_name']} (@{bot_info['username']})")
+            if bot_info['username'] != 'BitgetPerpbot':
+                print(f"⚠️ UYARI: Beklenen bot BitgetPerpbot ama {bot_info['username']} bulundu!")
+        else:
+            print("❌ Bot token doğrulaması başarısız!")
+            raise SystemExit("Geçersiz bot token!")
+    except Exception as e:
+        print(f"❌ Bot token test hatası: {e}")
+        raise SystemExit("Bot token doğrulaması başarısız!")
     
     # Bot instance oluştur
     trading_bot = AdvancedTradingBot()
