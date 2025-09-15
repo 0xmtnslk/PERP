@@ -542,10 +542,10 @@ class UpbitAnnouncementScraper:
                 
                 # Rate limiting - banlama riskini azaltmak için
                 if consecutive_errors > 3:
-                    wait_time = 600  # 10 dakika bekle
+                    wait_time = 120  # 2 dakika bekle
                     print(f"⚠️ Çoklu hata nedeniyle {wait_time//60} dakika bekleniyor...")
                 else:
-                    wait_time = 300  # Normal: 5 dakikada bir kontrol
+                    wait_time = 60  # Normal: 1 dakikada bir kontrol
                     print(f"💤 {wait_time//60} dakika bekleniyor...")
                 
                 time.sleep(wait_time)
@@ -556,7 +556,7 @@ class UpbitAnnouncementScraper:
             except Exception as e:
                 print(f"❌ Beklenmeyen hata: {e}")
                 consecutive_errors += 1
-                wait_time = min(300 + (consecutive_errors * 60), 900)  # Max 15 dakika
+                wait_time = min(60 + (consecutive_errors * 30), 300)  # Max 5 dakika
                 print(f"⏳ {wait_time//60} dakika bekleyip tekrar deneniyor...")
                 time.sleep(wait_time)
 

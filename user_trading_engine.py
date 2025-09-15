@@ -276,11 +276,125 @@ class UserTradingEngine:
             
             if result.returncode == 0:
                 logger.info(f"Trade executed successfully for user {user_id}: {symbol}")
+                # İşlem başarılı - Telegram bildirimi gönder
+                self.send_trade_notification(user_id, symbol, "SUCCESS", settings, result.stdout)
             else:
                 logger.error(f"Long script failed for user {user_id}: {result.stderr}")
+                # İşlem başarısız - Hata bildirimi gönder
+                self.send_trade_notification(user_id, symbol, "ERROR", settings, result.stderr)
                 
         except Exception as e:
             logger.error(f"Error executing trade for user {user_id}: {e}")
+            # Hata durumunda da bildirim gönder
+            settings = self.get_user_settings(user_id)
+            self.send_trade_notification(user_id, symbol, "ERROR", settings, str(e))
+    
+    def send_trade_notification(self, user_id: int, symbol: str, status: str, settings: Dict[str, Any], details: str = ""):
+        """İşlem bildirimini Telegram'a gönder"""
+        try:
+            # Kullanıcının bildirim tercihini kontrol et  
+            if not settings.get('notifications', True):
+                logger.info(f"Notifications disabled for user {user_id}, skipping trade notification")
+                return
+            import json
+            from datetime import datetime
+            from notification_config import notification_config
+            
+            # İşlem detaylarını parse et
+            price = "N/A"
+            order_id = "N/A"
+            amount = settings.get('trading_amount', 'N/A')
+            
+            # Order bilgilerini JSON dosyalarından al (daha güvenilir)
+            if status == "SUCCESS":
+                try:
+                    # Order ID ve detaylarını order_id.json'dan al
+                    order_id_file = os.path.join(self.BASE_DIR, "PERP", "order_id.json")
+                    if os.path.exists(order_id_file):
+                        with open(order_id_file, 'r') as f:
+                            order_data = json.load(f)
+                            if 'data' in order_data and 'orderId' in order_data['data']:
+                                order_id = order_data['data']['orderId']
+                                
+                    # Order fills bilgilerini order_fills.json'dan al
+                    order_fills_file = os.path.join(self.BASE_DIR, "PERP", "order_fills.json")
+                    if os.path.exists(order_fills_file):
+                        with open(order_fills_file, 'r') as f:
+                            fills_data = json.load(f)
+                            if 'data' in fills_data and fills_data['data']:
+                                fill = fills_data['data'][0]  # İlk fill
+                                price = f"${float(fill.get('price', 0)):.4f}"
+                                actual_amount = f"{float(fill.get('sizeQty', amount)):.4f}"
+                                
+                except Exception as e:
+                    logger.warning(f"Error reading order files: {e}")
+                    # Fallback: console output'tan parse et
+                    try:
+                        import re
+                        price_match = re.search(r'Price:\s*(\d+\.?\d*)', details or "")
+                        if price_match:
+                            price = f"${price_match.group(1)}"
+                    except:
+                        pass
+            
+            # Telegram bildirim verileri
+            if status == "SUCCESS":
+                notification_data = {
+                    "type": "TRADE_SUCCESS",
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "user_id": user_id,
+                    "trade": {
+                        "symbol": symbol,
+                        "action": "LONG_OPENED",
+                        "amount": f"{amount} USDT",
+                        "price": price,
+                        "order_id": order_id,
+                        "leverage": "Max",
+                        "take_profit": f"{settings.get('take_profit', 'N/A')}%"
+                    },
+                    "message": f"🚀 LONG İŞLEMİ AÇILDI!\n\n💰 Coin: {symbol}\n💵 Miktar: {amount} USDT\n💲 Fiyat: {price}\n⚡ Leverage: Maksimum\n📈 Take Profit: {settings.get('take_profit', 'N/A')}%\n🔗 Order ID: {order_id}\n🕐 Zaman: {datetime.now().strftime('%H:%M:%S')}"
+                }
+            else:
+                notification_data = {
+                    "type": "TRADE_ERROR", 
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "user_id": user_id,
+                    "trade": {
+                        "symbol": symbol,
+                        "action": "FAILED",
+                        "amount": f"{amount} USDT",
+                        "error": details[:200] if details else "Bilinmeyen hata"
+                    },
+                    "message": f"❌ İŞLEM HATASI!\n\n💰 Coin: {symbol}\n💵 Miktar: {amount} USDT\n🚨 Hata: Sistem hatası\n🕐 Zaman: {datetime.now().strftime('%H:%M:%S')}\n\n🔄 Lütfen API anahtarlarını ve ayarlarını kontrol edin."
+                }
+            
+            # Bildirim dosyasına güvenle yaz (file lock ile)
+            notification_file = notification_config.telegram_notifications_file
+            
+            # Notification data'yı user-specific olarak yaz
+            notification_data['target_user_id'] = user_id
+            
+            # File lock ile güvenli yazma
+            import fcntl
+            try:
+                with open(notification_file, 'w', encoding='utf-8') as f:
+                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)  # Exclusive lock
+                    json.dump(notification_data, f, indent=2, ensure_ascii=False)
+                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)  # Unlock
+                    
+                logger.info(f"📱 Trade notification written to file for user {user_id}: {symbol} - {status}")
+            except Exception as write_error:
+                logger.error(f"Failed to write notification file: {write_error}")
+                # Fallback: basit write
+                try:
+                    with open(notification_file, 'w', encoding='utf-8') as f:
+                        json.dump(notification_data, f, indent=2, ensure_ascii=False)
+                    logger.info(f"📱 Trade notification written (fallback) for user {user_id}: {symbol} - {status}")
+                except:
+                    logger.error(f"Complete failure writing notification for user {user_id}")
+            
+        except Exception as e:
+            logger.error(f"Error sending trade notification for user {user_id}: {e}")
     
     def execute_user_emergency_stop(self, user_id: int):
         """Execute emergency stop for specific user"""

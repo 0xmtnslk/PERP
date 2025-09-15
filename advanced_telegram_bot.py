@@ -442,6 +442,9 @@ class AdvancedTradingBot:
         self.last_notification_check = 0
         print(f"🤖 Telegram Bot using centralized notification config: {self.notification_file}")
         
+        # User state management - custom symbol girişi için
+        self.user_states = {}
+        
     async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Bot başlatma komutu"""
         user = update.effective_user
@@ -552,6 +555,18 @@ Bitget hesabından aldığın API anahtarını gönder.
             parse_mode=ParseMode.MARKDOWN,
             reply_markup=reply_markup
         )
+    
+    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Genel mesaj handler - API kurulum ve custom symbol"""
+        user_id = update.effective_user.id
+        
+        # Custom symbol processing önceliği var
+        if self.user_states.get(user_id) == "waiting_for_custom_symbol":
+            await self.process_custom_symbol_message(update, context)
+            return
+        
+        # API kurulum processing
+        await self.handle_api_setup(update, context)
     
     async def handle_api_setup(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """API kurulum sürecini yönet"""
@@ -956,7 +971,7 @@ Otomatik ticaret ayarların aktifse işlem başlatılacak.
 ⚡ Leverage: Maksimum (Bitget otomatik)
 
 🪙 **Coin Seçimi:**
-Aşağıdaki popüler coinlerden birini seç.
+Popüler coinlerden birini seç veya kendi symbol'ünü gir (ETH, BTC, SOL vs).
         """
         
         # Popüler coinleri 4'lü satırlarda düzenle
@@ -968,7 +983,8 @@ Aşağıdaki popüler coinlerden birini seç.
                 row.append(InlineKeyboardButton(f"{coin}", callback_data=f"long_{coin}"))
             keyboard.append(row)
         
-        # Alt butonlar
+        # Custom symbol ve geri butonları
+        keyboard.append([InlineKeyboardButton("✏️ Özel Symbol Gir", callback_data="custom_symbol_input")])
         keyboard.append([InlineKeyboardButton("◀️ Geri", callback_data="main_menu")])
         
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -1032,7 +1048,8 @@ Bu ayarlarla long işlemi açmak istediğinden emin misin?
             os.makedirs(user_dir, exist_ok=True)
             
             # Manuel long işlemi dosyasını kullanıcı bazlı oluştur
-            perp_symbol = f"{coin_symbol}USDT_UMCBL"
+            # Eğer custom symbol ise mapping kullan, değilse standart format
+            perp_symbol = self._map_symbol_to_bitget(coin_symbol) or f"{coin_symbol}USDT_UMCBL"
             perp_file = os.path.join(user_dir, "manual_long_output.txt")
             
             with open(perp_file, 'w') as f:
@@ -1079,6 +1096,164 @@ Bu ayarlarla long işlemi açmak istediğinden emin misin?
                     [InlineKeyboardButton("🎛️ Bot Ayarları", callback_data="main_menu")]
                 ])
             )
+    
+    async def custom_symbol_input_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Custom symbol girişi için callback"""
+        query = update.callback_query
+        await query.answer()
+        
+        user_id = query.from_user.id
+        
+        # Kullanıcıyı custom symbol bekleme state'ine al
+        self.user_states[user_id] = "waiting_for_custom_symbol"
+        
+        await query.edit_message_text(
+            "✏️ **Özel Symbol Girişi**\n\n"
+            "🪙 **Lütfen işlem yapmak istediğin coin symbol'ünü yaz:**\n\n"
+            "📝 **Örnek:** ETH, BTC, SOL, ADA, LINK\n"
+            "⚠️ **Not:** Sadece büyük harflerle yazabilirsin\n"
+            "❌ **İptal etmek için:** /cancel\n\n"
+            "👇 **Symbol'ü aşağıya yaz:**",
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ İptal", callback_data="manual_long")]
+            ])
+        )
+    
+    async def process_custom_symbol_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Custom symbol mesajını işle"""
+        user_id = update.effective_user.id
+        text = update.message.text.strip().upper()
+        
+        # State kontrolü
+        if self.user_states.get(user_id) != "waiting_for_custom_symbol":
+            return
+        
+        # Cancel komutu kontrolü
+        if text == "/CANCEL":
+            self.user_states.pop(user_id, None)
+            await update.message.reply_text(
+                "❌ **İptal edildi**\n\nManuel long menüsüne geri dön:",
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("📊 Manuel Long", callback_data="manual_long")]
+                ])
+            )
+            return
+        
+        # Symbol validasyonu
+        if not self._validate_custom_symbol(text):
+            await update.message.reply_text(
+                "❌ **Geçersiz Symbol!**\n\n"
+                "🔸 **Geçerli format:** 2-6 karakter, sadece harfler\n"
+                "🔸 **Örnek:** ETH, BTC, SOL, MATIC\n\n"
+                "👇 **Tekrar dene:**"
+            )
+            return
+        
+        # State temizle
+        self.user_states.pop(user_id, None)
+        
+        # Symbol mapping ve validation
+        perp_symbol = self._map_symbol_to_bitget(text)
+        if not perp_symbol:
+            await update.message.reply_text(
+                f"❌ **{text} Desteklenmiyor!**\n\n"
+                "🔸 Bu coin Bitget'te mevcut değil\n"
+                "🔸 Desteklenen coinler: BTC, ETH, SOL, ADA vs\n\n"
+                "👇 **Geçerli bir symbol dene:**"
+            )
+            return
+            
+        # Symbol'ü onay menüsüne gönder  
+        settings = self.db.get_user_settings(user_id)
+        
+        confirm_text = f"""
+🚀 **Custom Long İşlemi Onayı**
+
+🪙 **Coin:** {text} → {perp_symbol}
+💰 **Miktar:** {settings['trading_amount']} USDT
+📈 **Take Profit:** %{settings['take_profit']}
+⚡ **Leverage:** Maksimum
+🎯 **İşlem Türü:** Long (Yükseliş bahsi)
+
+⚠️ **DİKKAT:** Bu gerçek para ile işlem açacak!
+
+Bu ayarlarla {text} long işlemi açmak istediğinden emin misin?
+        """
+        
+        keyboard = [
+            [
+                InlineKeyboardButton("✅ EVET, AÇ", callback_data=f"confirm_long_{text}"),
+                InlineKeyboardButton("❌ HAYIR", callback_data="manual_long")
+            ]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        await update.message.reply_text(
+            confirm_text,
+            parse_mode=ParseMode.MARKDOWN,
+            reply_markup=reply_markup
+        )
+    
+    def _validate_custom_symbol(self, symbol: str) -> bool:
+        """Custom symbol validasyonu"""
+        if not symbol:
+            return False
+        
+        # 2-6 karakter arası, sadece harfler
+        if len(symbol) < 2 or len(symbol) > 6:
+            return False
+        
+        # Sadece harfler (A-Z)
+        if not symbol.isalpha():
+            return False
+            
+        # Yaygın coin sembolleri listesi (opsiyonel)
+        common_symbols = [
+            "BTC", "ETH", "BNB", "SOL", "ADA", "XRP", "DOT", "MATIC", "LINK", "AVAX",
+            "LTC", "BCH", "UNI", "ATOM", "FTM", "NEAR", "ALGO", "VET", "ICP", "MANA",
+            "SAND", "AXS", "SHIB", "DOGE", "TRX", "EOS", "XLM", "AAVE", "SUSHI"
+        ]
+        
+        logger.info(f"Custom symbol validated: {symbol} (common: {symbol in common_symbols})")
+        return True
+    
+    def _map_symbol_to_bitget(self, symbol: str) -> str:
+        """Symbol'ü Bitget PERP formatına çevir"""
+        # Desteklenen coin mapping tablosu
+        symbol_mapping = {
+            "BTC": "BTCUSDT_UMCBL",
+            "ETH": "ETHUSDT_UMCBL", 
+            "BNB": "BNBUSDT_UMCBL",
+            "SOL": "SOLUSDT_UMCBL",
+            "ADA": "ADAUSDT_UMCBL",
+            "XRP": "XRPUSDT_UMCBL",
+            "DOT": "DOTUSDT_UMCBL",
+            "MATIC": "MATICUSDT_UMCBL",
+            "LINK": "LINKUSDT_UMCBL",
+            "AVAX": "AVAXUSDT_UMCBL",
+            "LTC": "LTCUSDT_UMCBL",
+            "BCH": "BCHUSDT_UMCBL",
+            "UNI": "UNIUSDT_UMCBL",
+            "ATOM": "ATOMUSDT_UMCBL",
+            "FTM": "FTMUSDT_UMCBL",
+            "NEAR": "NEARUSDT_UMCBL",
+            "ALGO": "ALGOUSDT_UMCBL",
+            "VET": "VETUSDT_UMCBL",
+            "ICP": "ICPUSDT_UMCBL",
+            "MANA": "MANAUSDT_UMCBL",
+            "SAND": "SANDUSDT_UMCBL",
+            "AXS": "AXSUSDT_UMCBL",
+            "SHIB": "SHIBUSDT_UMCBL",
+            "DOGE": "DOGEUSDT_UMCBL",
+            "TRX": "TRXUSDT_UMCBL",
+            "EOS": "EOSUSDT_UMCBL",
+            "XLM": "XLMUSDT_UMCBL",
+            "AAVE": "AAVEUSDT_UMCBL",
+            "SUSHI": "SUSHIUSDT_UMCBL"
+        }
+        
+        return symbol_mapping.get(symbol.upper())
     
     async def broadcast_trade_notification(self, user_id: int, action: str, coin_symbol: str, 
                                          amount: float, price: float, trade_id: int):
@@ -1228,6 +1403,8 @@ async def callback_router(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await bot_instance.manual_long_selection_callback(update, context)
     elif data.startswith("confirm_long_"):
         await bot_instance.confirm_manual_long_callback(update, context)
+    elif data == "custom_symbol_input":
+        await bot_instance.custom_symbol_input_callback(update, context)
     else:
         await query.answer("Bu özellik henüz hazır değil!")
 
@@ -1278,10 +1455,16 @@ def main():
     application.add_handler(CommandHandler("start", trading_bot.start_command))
     application.add_handler(CallbackQueryHandler(callback_router))
     
-    # API kurulum mesajlarını yakala
+    # API kurulum ve custom symbol mesajlarını yakala
     application.add_handler(MessageHandler(
         filters.TEXT & ~filters.COMMAND, 
-        trading_bot.handle_api_setup
+        trading_bot.handle_message
+    ))
+    
+    # Custom symbol input callback'i için explicit handler (güvenlik)
+    application.add_handler(CallbackQueryHandler(
+        trading_bot.custom_symbol_input_callback,
+        pattern="^custom_symbol_input$"
     ))
     
     # Periyodik görevler (Job Queue)
