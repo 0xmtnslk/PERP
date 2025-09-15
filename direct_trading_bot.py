@@ -35,12 +35,29 @@ class DirectTradingBot:
     def execute_trade(self, symbol):
         """Execute trade directly using PERP/long.py with environment variables"""
         try:
-            # Create symbol file for PERP/long.py  
+            # Create symbol file for PERP/long.py - force clean write
             symbol_file = "PERP/new_coin_output.txt"
+            symbol_content = f"{symbol}USDT_UMCBL"
+            
+            # Dosyayı sil ve yeniden oluştur (cache problemini önlemek için)
+            if os.path.exists(symbol_file):
+                os.remove(symbol_file)
+            
             with open(symbol_file, "w") as f:
-                f.write(f"{symbol}USDT_UMCBL")
+                f.write(symbol_content)
+                f.flush()  # Buffer'ı zorla boşalt
+                os.fsync(f.fileno())  # Disk'e zorla yaz
                 
-            logger.info(f"Created symbol file: {symbol_file} with {symbol}USDT_UMCBL")
+            # Doğrula
+            with open(symbol_file, "r") as f:
+                written_content = f.read().strip()
+                
+            logger.info(f"Created symbol file: {symbol_file} with {symbol_content}")
+            logger.info(f"Verified content: {written_content}")
+            
+            if written_content != symbol_content:
+                logger.error(f"File write mismatch! Expected: {symbol_content}, Got: {written_content}")
+                return False, "", f"Dosya yazma hatası: {symbol_content} beklendi, {written_content} bulundu"
             
             # Execute the trading script directly with environment variable
             env = os.environ.copy()
@@ -54,8 +71,25 @@ class DirectTradingBot:
             logger.info(f"Trading script stdout: {result.stdout}")
             if result.stderr:
                 logger.error(f"Trading script stderr: {result.stderr}")
-                
-            return result.returncode == 0, result.stdout, result.stderr
+            
+            # Detaylı hata mesajı döndür
+            if result.returncode == 0:
+                return True, result.stdout, result.stderr
+            else:
+                # stdout'dan hatayı çıkar
+                error_msg = "Bilinmeyen hata"
+                if result.stdout and "❌ İşlem hatası:" in result.stdout:
+                    lines = result.stdout.split('\n')
+                    for line in lines:
+                        if "❌ İşlem hatası:" in line:
+                            error_msg = line.replace("❌ İşlem hatası:", "").strip()
+                            break
+                elif result.stderr:
+                    error_msg = result.stderr[:200]
+                elif result.stdout:
+                    error_msg = result.stdout[-200:]  # Son 200 karakter
+                    
+                return False, result.stdout, error_msg
             
         except Exception as e:
             logger.error(f"Trade execution error: {e}")
