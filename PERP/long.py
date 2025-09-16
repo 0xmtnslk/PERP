@@ -340,14 +340,14 @@ if __name__ == '__main__':
           import os
           
           user_leverage = 0
+          # Get user ID from environment variable or default to main user (define OUTSIDE try block)
+          user_id = int(os.getenv("USER_ID", "625972998"))
           try:
-              # Get user ID from environment variable or default to main user
-              user_id = int(os.getenv("USER_ID", "625972998"))
               db_path = os.path.join(os.getcwd(), "trading_bot.db")
               conn = sqlite3.connect(db_path)
               cursor = conn.cursor()
               
-              cursor.execute("SELECT leverage FROM users WHERE user_id = ?", (user_id,))
+              cursor.execute("SELECT leverage FROM user_settings WHERE user_id = ?", (user_id,))
               result = cursor.fetchone()
               conn.close()
               
@@ -456,8 +456,10 @@ if __name__ == '__main__':
                   except Exception as e:
                       print(f"⚠️ Secret.json read error: {e}, using default $10")
               else:
-                  configured_open_USDT = float(credentials.get("open_USDT"))
-                  print(f"🌍 Using env amount: ${configured_open_USDT}")
+                  env_amount = credentials.get("open_USDT")
+                  if env_amount:
+                      configured_open_USDT = float(env_amount)
+                      print(f"🌍 Using env amount: ${configured_open_USDT}")
               
               # Enforce minimum 10 USDT for Bitget requirements
               configured_open_USDT = max(10.0, configured_open_USDT)
@@ -484,8 +486,8 @@ if __name__ == '__main__':
           # Size 0 kontrolü ekle
           if coin_size <= 0:
               print(f"❌ HATA: Coin size 0 veya negatif: {coin_size}")
-              print(f"   open_USDT: {open_USDT}")
-              print(f"   maxLeverage: {maxLeverage}")  
+              print(f"   configured_open_USDT: {configured_open_USDT}")
+              print(f"   leverage: {leverage}")  
               print(f"   coin_price: {coin_price['last_price']}")
               exit(1)
  
