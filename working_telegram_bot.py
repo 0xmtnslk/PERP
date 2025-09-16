@@ -7,9 +7,160 @@ import os
 import sqlite3
 import logging
 import asyncio
+import re
+import time
+from datetime import datetime, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from telegram.error import BadRequest
+
+# ✅ ROBUST INPUT VALIDATION
+class ValidationError(Exception):
+    """API input validation error"""
+    pass
+
+class InputValidator:
+    """Robust input validator to prevent bot crashes"""
+    
+    @staticmethod
+    def validate_api_triplet(text: str) -> tuple[str, str, str]:
+        """
+        Robust API credentials validation
+        Returns: (api_key, secret_key, passphrase) or raises ValidationError
+        """
+        # Guard: Basic checks
+        if not text or not isinstance(text, str):
+            raise ValidationError("❌ Boş giriş. Format: API_KEY,SECRET_KEY,PASSPHRASE")
+        
+        # Length limit for security  
+        if len(text) > 512:
+            raise ValidationError("❌ Giriş çok uzun (max 512 karakter)")
+        
+        # Normalize input
+        text = text.strip()
+        if '\n' in text or '\r' in text:
+            raise ValidationError("❌ Tek satırda girin. Format: API_KEY,SECRET_KEY,PASSPHRASE")
+        
+        # Split validation
+        parts = text.split(',')
+        if len(parts) != 3:
+            raise ValidationError("❌ 3 değer gerekli. Format: API_KEY,SECRET_KEY,PASSPHRASE\nÖrnek: bg_123abc,sk_456def,mypass123")
+        
+        # Clean and validate each part
+        api_key = parts[0].strip()
+        secret_key = parts[1].strip()
+        passphrase = parts[2].strip()
+        
+        # Length validation
+        if len(api_key) < 10 or len(api_key) > 128:
+            raise ValidationError("❌ API Key uzunluğu 10-128 karakter olmalı")
+        
+        if len(secret_key) < 20 or len(secret_key) > 256:
+            raise ValidationError("❌ Secret Key uzunluğu 20-256 karakter olmalı")
+        
+        if len(passphrase) < 6 or len(passphrase) > 128:
+            raise ValidationError("❌ Passphrase uzunluğu 6-128 karakter olmalı")
+        
+        # Format validation with regex
+        if not re.match(r'^[A-Za-z0-9_\-]+$', api_key):
+            raise ValidationError("❌ API Key sadece harf, rakam, _ ve - içermeli")
+        
+        if not re.match(r'^[A-Za-z0-9_\-+/=]+$', secret_key):
+            raise ValidationError("❌ Secret Key geçersiz karakter içeriyor")
+        
+        if not re.match(r'^[A-Za-z0-9!@#%\^&*()_+\-=?.,:;]+$', passphrase):
+            raise ValidationError("❌ Passphrase geçersiz karakter içeriyor")
+        
+        # All parts must be non-empty after strip
+        if not api_key or not secret_key or not passphrase:
+            raise ValidationError("❌ Tüm alanlar dolu olmalı. Boş alan bırakma")
+        
+        return api_key, secret_key, passphrase
+    
+    @staticmethod
+    def sanitize_input(text: str) -> str:
+        """Clean user input safely"""
+        if not text:
+            return ""
+        # Remove dangerous characters
+        dangerous_chars = ['<', '>', '&', '"', "'", ';', '(', ')', '{', '}', '[', ']']
+        for char in dangerous_chars:
+            text = text.replace(char, '')
+        return text.strip()[:200]
+
+# ✅ USER STATE TIMEOUT MANAGER
+class UserStateTimeoutManager:
+    """Manages user state timeouts to prevent stuck users"""
+    
+    def __init__(self):
+        self.user_state_timestamps = {}  # user_id -> timestamp
+        self.timeout_minutes = 10  # 10 minutes timeout
+    
+    def set_user_waiting_state(self, user_id: int, state: str, context: ContextTypes.DEFAULT_TYPE):
+        """Set user state with timestamp"""
+        context.user_data['waiting'] = state
+        self.user_state_timestamps[user_id] = time.time()
+        logger.info(f"✅ User {user_id} state set to '{state}' with timeout")
+    
+    def clear_user_state(self, user_id: int, context: ContextTypes.DEFAULT_TYPE):
+        """Clear user state and timestamp"""
+        if user_id in self.user_state_timestamps:
+            del self.user_state_timestamps[user_id]
+        
+        if context.user_data.get('waiting'):
+            context.user_data['waiting'] = None
+            context.user_data['api_failures'] = 0
+            logger.info(f"✅ User {user_id} state cleared")
+    
+    async def check_and_cleanup_expired_states(self, application):
+        """Check for expired user states and cleanup"""
+        try:
+            current_time = time.time()
+            timeout_seconds = self.timeout_minutes * 60
+            expired_users = []
+            
+            for user_id, timestamp in self.user_state_timestamps.items():
+                if current_time - timestamp > timeout_seconds:
+                    expired_users.append(user_id)
+            
+            # Cleanup expired users
+            for user_id in expired_users:
+                try:
+                    # Clear our tracking
+                    del self.user_state_timestamps[user_id]
+                    
+                    # Try to notify user if possible
+                    try:
+                        await application.bot.send_message(
+                            chat_id=user_id,
+                            text="⏰ **Zaman Aşımı**\n\n"
+                                 f"API giriş işleminiz {self.timeout_minutes} dakika sonra zaman aşımına uğradı\n"
+                                 "🔄 Tekrar denemek için: /start",
+                            parse_mode='Markdown'
+                        )
+                        logger.info(f"✅ Timeout notification sent to user {user_id}")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not notify user {user_id} about timeout: {e}")
+                    
+                    logger.info(f"🧹 Cleaned up expired state for user {user_id}")
+                    
+                except Exception as e:
+                    logger.error(f"❌ Error cleaning up user {user_id}: {e}")
+                    
+        except Exception as e:
+            logger.error(f"❌ Error in state cleanup task: {e}")
+    
+    def is_state_expired(self, user_id: int) -> bool:
+        """Check if user state has expired"""
+        if user_id not in self.user_state_timestamps:
+            return False
+        
+        current_time = time.time()
+        timeout_seconds = self.timeout_minutes * 60
+        return (current_time - self.user_state_timestamps[user_id]) > timeout_seconds
+
+# ✅ GLOBAL TIMEOUT MANAGER INSTANCE
+timeout_manager = UserStateTimeoutManager()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -173,7 +324,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "🔙 Geri: /start",
                 parse_mode='Markdown'
             )
-            context.user_data['waiting'] = 'api'
+            timeout_manager.set_user_waiting_state(user_id, 'api', context)
             
         elif data == "amount":
             keyboard = [
@@ -426,19 +577,48 @@ async def trigger_test_trade(query):
         await query.message.reply_text(f"❌ Test hatası: {e}")
 
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Metin mesajları işle"""
-    user_id = update.effective_user.id
-    text = update.message.text
-    
-    if context.user_data.get('waiting') == 'api':
-        if ',' in text and len(text.split(',')) == 3:
-            api_key, secret_key, passphrase = [x.strip() for x in text.split(',')]
+    """🛡️ ROBUST Metin mesajları işle - Crash korumalı"""
+    try:
+        # ✅ GUARD: Basic safety checks
+        if not update or not update.message or not update.message.text:
+            logger.warning("Message handler: Invalid update or empty message")
+            return
+        
+        user_id = update.effective_user.id
+        text = update.message.text
+        
+        # ✅ GUARD: Input length protection  
+        if len(text) > 512:
+            await update.message.reply_text(
+                "❌ Mesaj çok uzun (max 512 karakter)\n🔙 /start ile ana menü"
+            )
+            return
+        
+        # ✅ API INPUT HANDLING WITH ROBUST VALIDATION
+        if context.user_data.get('waiting') == 'api':
+            # ✅ CHECK STATE TIMEOUT FIRST
+            if timeout_manager.is_state_expired(user_id):
+                timeout_manager.clear_user_state(user_id, context)
+                await update.message.reply_text(
+                    "⏰ **API girişiniz zaman aşımına uğradı**\n\n"
+                    "🔄 Tekrar denemek için: /start → 🔑 API Ayarları"
+                )
+                return
             
-            # ✅ API credentials'ları arka planda kaydet
             try:
+                # Initialize failure counter if not exists
+                failures = context.user_data.get('api_failures', 0)
+                
+                # ✅ USE ROBUST VALIDATOR
+                api_key, secret_key, passphrase = InputValidator.validate_api_triplet(text)
+                
+                # ✅ SUCCESS: Save API credentials
                 bot.update_setting(user_id, 'api_key', api_key)
                 bot.update_setting(user_id, 'secret_key', secret_key)
                 bot.update_setting(user_id, 'passphrase', passphrase)
+                
+                # ✅ SUCCESS: Clear waiting state with timeout manager
+                timeout_manager.clear_user_state(user_id, context)
                 
                 await update.message.reply_text(
                     "✅ **API Bilgileri Kaydedildi!**\n\n"
@@ -447,17 +627,117 @@ async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "📋 /start ile menüye dön",
                     parse_mode='Markdown'
                 )
-                context.user_data['waiting'] = None
+                logger.info(f"✅ API credentials saved successfully for user {user_id}")
+                
+            except ValidationError as ve:
+                # ✅ VALIDATION ERROR: Increment failures and give feedback
+                failures += 1
+                context.user_data['api_failures'] = failures
+                
+                error_msg = str(ve)
+                if failures >= 3:
+                    # ✅ TOO MANY FAILURES: Clear state with timeout manager
+                    timeout_manager.clear_user_state(user_id, context)
+                    error_msg += "\n\n🆘 **Çok fazla hata!**\n⚠️ Yardım için: /start → 🔑 API Ayarları"
+                else:
+                    error_msg += f"\n\n🔢 Deneme: {failures}/3\n🔙 /start ile çık"
+                
+                await update.message.reply_text(error_msg)
+                logger.warning(f"API validation failed for user {user_id}: {ve} (attempt {failures})")
+                
             except Exception as e:
-                logger.error(f"API save error: {e}")
-                await update.message.reply_text("❌ API kaydetme hatası!")
+                # ✅ DATABASE ERROR: Reset state with timeout manager
+                timeout_manager.clear_user_state(user_id, context)
+                
+                logger.error(f"❌ API save error for user {user_id}: {e}")
+                await update.message.reply_text(
+                    "❌ **Sistem hatası!**\n\n"
+                    "API kaydederken problem oluştu\n"
+                    "🔙 /start ile tekrar dene"
+                )
+        
         else:
+            # ✅ NOT WAITING FOR API: Inform user politely
             await update.message.reply_text(
-                "❌ **Hatalı Format!**\n\n"
-                "Doğru format: `API_KEY,SECRET_KEY,PASSPHRASE`\n"
-                "Virgülle ayırın, boşluk bırakmayın",
-                parse_mode='Markdown'
+                "ℹ️ Şu an bir giriş beklenmiyordu\n\n📊 /start ile menüye git"
             )
+            
+    except Exception as e:
+        # ✅ GLOBAL PROTECTION: Never let bot crash
+        logger.error(f"❌ CRITICAL: Message handler crashed for user {user_id if 'user_id' in locals() else 'unknown'}: {e}")
+        try:
+            if update and update.message:
+                await update.message.reply_text(
+                    "⚠️ **Geçici sistem hatası**\n\n"
+                    "Lütfen /start ile yeniden deneyin"
+                )
+        except:
+            # Even replying failed - log and continue
+            logger.error(f"❌ FATAL: Could not send error message: {e}")
+        
+        # ✅ EMERGENCY: Clear any waiting states to prevent stuck users
+        if 'context' in locals() and 'user_id' in locals():
+            try:
+                timeout_manager.clear_user_state(user_id, context)
+            except:
+                try:
+                    context.user_data.clear()
+                except:
+                    pass
+
+# ✅ GLOBAL ERROR HANDLER - Prevents application crashes
+async def global_error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """
+    Global error handler to catch all unhandled exceptions
+    Ensures bot stays responsive even with unexpected errors
+    """
+    try:
+        # Log the error without PII
+        error = context.error
+        logger.error(f"🚨 GLOBAL ERROR HANDLER: {type(error).__name__}: {error}")
+        
+        # Try to extract user info safely  
+        user_id = None
+        if update and hasattr(update, 'effective_user') and update.effective_user:
+            user_id = update.effective_user.id
+        elif update and hasattr(update, 'callback_query') and update.callback_query:
+            user_id = update.callback_query.from_user.id
+        
+        # Try to send a user-friendly error message if possible
+        if update and hasattr(update, 'message') and update.message:
+            try:
+                await update.message.reply_text(
+                    "⚠️ **Geçici sistem hatası**\n\n"
+                    "Bot geçici olarak yanıt veremedi\n"
+                    "Lütfen /start ile tekrar deneyin"
+                )
+            except:
+                pass  # If we can't even send error message, just log
+        elif update and hasattr(update, 'callback_query') and update.callback_query:
+            try:
+                await update.callback_query.message.reply_text(
+                    "⚠️ **Geçici sistem hatası**\n\n"
+                    "Bot geçici olarak yanıt veremedi\n"
+                    "Lütfen /start ile tekrar deneyin"
+                )
+            except:
+                pass  # If we can't even send error message, just log
+        
+        # Emergency user state cleanup to prevent stuck states
+        if user_id and context.user_data:
+            try:
+                context.user_data.clear()
+                logger.info(f"✅ Emergency state cleared for user {user_id}")
+            except:
+                pass  # Even cleanup can fail, that's ok
+                
+        # Log that we handled the error and bot continues
+        logger.info("✅ Global error handled, bot continues running")
+        
+    except Exception as emergency_error:
+        # Even our error handler failed - this is very rare
+        logger.critical(f"💥 CRITICAL: Global error handler itself failed: {emergency_error}")
+        # Bot will continue running anyway due to application architecture
 
 def main():
     if not BOT_TOKEN:
@@ -465,6 +745,9 @@ def main():
         return
         
     application = Application.builder().token(BOT_TOKEN).build()
+    
+    # ✅ ADD GLOBAL ERROR HANDLER FIRST (highest priority)
+    application.add_error_handler(global_error_handler)
     
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_callback))
@@ -474,6 +757,26 @@ def main():
     print("✅ Callback problemleri çözüldü!")
     print("✅ Architect önerileri uygulandı")
     print("✅ Fast callback + background tasks")
+    print("✅ Robust error handling active")
+    print("✅ User state timeout protection")
+    
+    # ✅ PERIODIC STATE CLEANUP (will run in background when needed)
+    async def periodic_state_cleanup(context):
+        """Job queue task to cleanup expired user states"""
+        try:
+            await timeout_manager.check_and_cleanup_expired_states(application)
+            logger.info("🧹 Periodic state cleanup completed")
+        except Exception as e:
+            logger.error(f"❌ Periodic cleanup error: {e}")
+    
+    # Schedule periodic cleanup every 10 minutes using job queue
+    if application.job_queue:
+        application.job_queue.run_repeating(
+            periodic_state_cleanup, 
+            interval=600,  # 10 minutes
+            first=600      # Start after 10 minutes
+        )
+        logger.info("✅ Periodic state cleanup scheduled")
     
     # ✅ Architect önerisi: Eski callback'leri temizle
     application.run_polling(
