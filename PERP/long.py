@@ -66,7 +66,7 @@ def load_api_credentials():
         "api_key": os.getenv("BITGET_API_KEY"),
         "secret_key": os.getenv("BITGET_SECRET_KEY"), 
         "passphrase": os.getenv("BITGET_PASSPHRASE"),
-        "open_USDT": os.getenv("BITGET_OPEN_USDT", "5"),
+        "open_USDT": os.getenv("BITGET_OPEN_USDT"),
         "close_yuzde": os.getenv("BITGET_CLOSE_YUZDE", "1.2"),
         "leverage": os.getenv("BITGET_LEVERAGE", "0"),
         "user_id": os.getenv("USER_ID", "0")
@@ -443,8 +443,24 @@ if __name__ == '__main__':
               usable_usdt = available_usdt * 0.985
               print(f"💰 Usable USDT (with buffer): {usable_usdt}")
               
-              # RESTORE USER'S CONFIGURED AMOUNT (gerçek $10 alım için)
-              configured_open_USDT = float(credentials.get("open_USDT", 10))  # User's $10 setting
+              # SMART CONFIG LOADING: DB → env → secret.json → default
+              configured_open_USDT = 10.0  # Default minimum
+              
+              # Try secret.json fallback if env is empty
+              if not credentials.get("open_USDT"):
+                  try:
+                      with open("secret.json") as f:
+                          secret_data = json.load(f).get("bitget_example", {})
+                          configured_open_USDT = float(secret_data.get("open_USDT", 10))
+                          print(f"📄 Using secret.json amount: ${configured_open_USDT}")
+                  except Exception as e:
+                      print(f"⚠️ Secret.json read error: {e}, using default $10")
+              else:
+                  configured_open_USDT = float(credentials.get("open_USDT"))
+                  print(f"🌍 Using env amount: ${configured_open_USDT}")
+              
+              # Enforce minimum 10 USDT for Bitget requirements
+              configured_open_USDT = max(10.0, configured_open_USDT)
               actual_open_USDT = min(configured_open_USDT, usable_usdt)
               print(f"💰 User configured: ${configured_open_USDT}, Available: ${usable_usdt}, Using: ${actual_open_USDT}")
               
@@ -453,7 +469,7 @@ if __name__ == '__main__':
                   print(f"❌ INSUFFICIENT BALANCE: Need minimum $1, have ${actual_open_USDT}")
                   exit(1)
                   
-              coin_size = actual_open_USDT * leverage / float(coin_price['last_price'])
+              coin_size = actual_open_USDT / float(coin_price['last_price'])
               print(f"🔍 SAFE coin_size={coin_size} (balance-checked)")
           else:
               print(f"❌ Balance check failed: {balance_data}")

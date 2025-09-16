@@ -1,6 +1,9 @@
 {
-    "code": "40762",
-    "msg": "The order amount exceeds the balance",
-    "requestTime": 1758016624342,
-    "data": null
+    "code": "00000",
+    "msg": "success",
+    "requestTime": 1758017116148,
+    "data": {
+        "clientOid": "auto_trade_1758017115924",
+        "orderId": "1351787250336800769"
+    }
 }
