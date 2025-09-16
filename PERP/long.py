@@ -240,6 +240,18 @@ if __name__ == '__main__':
   # Symbol dosyasindan oku
   symbol = get_symbol_from_file(symbol_file_path)
   
+  # Symbol normalization for Bitget (missing step that broke ZKC!)
+  if symbol:
+      original_symbol = symbol
+      if not symbol.endswith("_UMCBL") and not symbol.endswith("_CMCBL"):
+          if not symbol.endswith("USDT"):
+              symbol = f"{symbol}USDT_UMCBL"
+          else:
+              symbol = f"{symbol}_UMCBL"
+      print(f"🔧 Symbol normalized: {original_symbol} → {symbol}")
+  else:
+      symbol = original_symbol
+  
   if symbol and API_KEY and API_SECRET_KEY and PASS_PHRASE:
       # Coin fiyatini al
       coin_price = get_futures_price(symbol)
