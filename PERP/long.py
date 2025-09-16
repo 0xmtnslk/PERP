@@ -247,20 +247,43 @@ if __name__ == '__main__':
       if coin_price:
           print(f"Anlik Coin Fiyati: {coin_price['last_price']}")  # Coin fiyatini ekrana yaz
           
-          # Leverage değerini belirle
-          user_leverage = int(credentials.get("leverage", 0))
+          # Leverage değerini belirle - DATABASE FIRST (Telegram bot integration)
+          import sqlite3
+          import os
+          
+          user_leverage = 0
+          try:
+              # User ID from user_trading_engine.py context (625972998)
+              user_id = 625972998  # Main user
+              db_path = os.path.join(os.getcwd(), "trading_bot.db")
+              conn = sqlite3.connect(db_path)
+              cursor = conn.cursor()
+              
+              cursor.execute("SELECT leverage FROM users WHERE user_id = ?", (user_id,))
+              result = cursor.fetchone()
+              conn.close()
+              
+              if result:
+                  user_leverage = int(result[0])
+                  print(f"🎯 Database leverage: {user_leverage}x (from Telegram)")
+              else:
+                  print("🔍 No database leverage found, checking config...")
+                  user_leverage = int(credentials.get("leverage", 0))
+          except Exception as e:
+              print(f"⚠️ Database leverage error: {e}, using config...")
+              user_leverage = int(credentials.get("leverage", 0))
+          
           if user_leverage > 0:
-              # Kullanıcı belirli leverage ayarlamış
               leverage = user_leverage
-              print(f"🎯 Kullanıcı leverage: {leverage}x")
+              print(f"🎯 Using user leverage: {leverage}x")
           else:
-              # Max leverage kullan
+              # Fallback to max leverage
               maxLeverage = get_max_leverage(symbol)
               if maxLeverage is None:
                   print("Max leverage alinamadi.")
                   exit()
               leverage = float(maxLeverage)
-              print(f"📊 Max leverage: {leverage}x")
+              print(f"📊 Fallback max leverage: {leverage}x")
 
           # Coin fiyatini %1.5 arttir
           coin_price_long = float(coin_price['last_price']) * 1.015
