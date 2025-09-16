@@ -171,6 +171,16 @@ except Exception as e:
                 timeout=30
             )
             
+            # LOG ALL SUBPROCESS OUTPUT - THIS WAS MISSING!
+            if result.stdout:
+                logger.info(f"📊 Position monitoring for user {user_id}:")
+                for line in result.stdout.strip().split('\n'):
+                    if line.strip():
+                        logger.info(f"   {line}")
+            
+            if result.stderr:
+                logger.error(f"❌ Position monitoring error for user {user_id}: {result.stderr}")
+            
             # Check if positions were closed
             if "CLOSE_RESULT:" in result.stdout:
                 pnl = result.stdout.split("CLOSE_RESULT:")[1].strip()

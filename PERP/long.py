@@ -255,7 +255,7 @@ if __name__ == '__main__':
           try:
               # User ID from user_trading_engine.py context (625972998)
               user_id = 625972998  # Main user
-              db_path = os.path.join(os.getcwd(), "trading_bot.db")
+              db_path = os.path.join(os.path.dirname(os.getcwd()), "trading_bot.db")
               conn = sqlite3.connect(db_path)
               cursor = conn.cursor()
               
