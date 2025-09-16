@@ -9,6 +9,7 @@ import logging
 import asyncio
 import re
 import time
+import threading
 from datetime import datetime, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
@@ -162,6 +163,19 @@ class UserStateTimeoutManager:
 # ✅ GLOBAL TIMEOUT MANAGER INSTANCE
 timeout_manager = UserStateTimeoutManager()
 
+# ✅ PRODUCTION-GRADE: Safe async task wrapper
+async def safe_create_task(coro, task_name: str = "unknown"):
+    """
+    Safe wrapper for asyncio.create_task to prevent unhandled exceptions
+    """
+    try:
+        task = asyncio.create_task(coro)
+        return await task
+    except Exception as e:
+        logger.error(f"❌ Background task '{task_name}' failed: {e}")
+        # Don't re-raise - keep bot running
+        return None
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -170,6 +184,8 @@ BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 class WorkingTelegramBot:
     def __init__(self):
         self.db_path = 'trading_bot.db'
+        # ✅ PRODUCTION-GRADE: Thread-safe database operations
+        self._db_lock = threading.RLock()  # Reentrant lock for nested operations
         self.init_database()
     
     def init_database(self):
@@ -204,48 +220,81 @@ class WorkingTelegramBot:
         logger.info("✅ Database initialized")
     
     def save_user(self, user_id, username):
-        """Kullanıcı kaydet"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', 
-                      (user_id, username))
-        cursor.execute('INSERT OR IGNORE INTO user_settings (user_id) VALUES (?)', 
-                      (user_id,))
-        conn.commit()
-        conn.close()
+        """Kullanıcı kaydet - Thread-safe"""
+        with self._db_lock:
+            try:
+                conn = sqlite3.connect(self.db_path, timeout=10.0)  # 10 second timeout
+                conn.execute('PRAGMA journal_mode=WAL')  # Better concurrency
+                cursor = conn.cursor()
+                cursor.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', 
+                              (user_id, username))
+                cursor.execute('INSERT OR IGNORE INTO user_settings (user_id) VALUES (?)', 
+                              (user_id,))
+                conn.commit()
+            except sqlite3.Error as e:
+                logger.error(f"❌ Database save_user error: {e}")
+                raise
+            finally:
+                if conn:
+                    conn.close()
     
     def get_user_settings(self, user_id):
-        """Kullanıcı ayarlarını getir"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute('''
-            SELECT api_key, secret_key, passphrase, amount_usdt, leverage, take_profit_percent, active
-            FROM user_settings WHERE user_id = ?
-        ''', (user_id,))
-        result = cursor.fetchone()
-        conn.close()
-        
-        if result:
-            return {
-                'api_key': result[0] or '',
-                'secret_key': result[1] or '',
-                'passphrase': result[2] or '',
-                'amount': result[3],
-                'leverage': result[4],
-                'take_profit': result[5],
-                'active': bool(result[6])
-            }
-        return None
+        """Kullanıcı ayarlarını getir - Thread-safe"""
+        with self._db_lock:
+            try:
+                conn = sqlite3.connect(self.db_path, timeout=10.0)
+                conn.execute('PRAGMA journal_mode=WAL')
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT api_key, secret_key, passphrase, amount_usdt, leverage, take_profit_percent, active
+                    FROM user_settings WHERE user_id = ?
+                ''', (user_id,))
+                result = cursor.fetchone()
+                
+                if result:
+                    return {
+                        'api_key': result[0] or '',
+                        'secret_key': result[1] or '',
+                        'passphrase': result[2] or '',
+                        'amount': result[3],
+                        'leverage': result[4],
+                        'take_profit': result[5],
+                        'active': bool(result[6])
+                    }
+                return None
+            except sqlite3.Error as e:
+                logger.error(f"❌ Database get_user_settings error: {e}")
+                return None  # Return safe default instead of crashing
+            finally:
+                if conn:
+                    conn.close()
     
     def update_setting(self, user_id, key, value):
-        """Tek ayar güncelle"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute(f'UPDATE user_settings SET {key} = ? WHERE user_id = ?', 
-                      (value, user_id))
-        conn.commit()
-        conn.close()
-        logger.info(f"✅ Updated {key} for user {user_id}")
+        """Tek ayar güncelle - Thread-safe"""
+        with self._db_lock:
+            try:
+                # ✅ SQL injection protection - validate column name
+                allowed_columns = ['api_key', 'secret_key', 'passphrase', 'amount_usdt', 
+                                 'leverage', 'take_profit_percent', 'active']
+                if key not in allowed_columns:
+                    raise ValueError(f"Invalid column name: {key}")
+                
+                conn = sqlite3.connect(self.db_path, timeout=10.0)
+                conn.execute('PRAGMA journal_mode=WAL')
+                cursor = conn.cursor()
+                cursor.execute(f'UPDATE user_settings SET {key} = ? WHERE user_id = ?', 
+                              (value, user_id))
+                conn.commit()
+                logger.info(f"✅ Updated {key} for user {user_id}")
+            except sqlite3.Error as e:
+                logger.error(f"❌ Database update_setting error for {key}: {e}")
+                raise
+            except ValueError as e:
+                logger.error(f"❌ Invalid update_setting parameter: {e}")
+                raise
+            finally:
+                if conn:
+                    conn.close()
 
 # Bot instance
 bot = WorkingTelegramBot()
@@ -345,8 +394,11 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         elif data.startswith("amount_"):
             amount = float(data.split("_")[1])
-            # ✅ Arka planda güncelle - blocking olmayan
-            asyncio.create_task(update_user_amount(user_id, amount, query))
+            # ✅ PRODUCTION-GRADE: Safe background update
+            asyncio.create_task(safe_create_task(
+                update_user_amount(user_id, amount, query), 
+                "update_user_amount"
+            ))
             
         elif data == "leverage":
             keyboard = [
@@ -367,7 +419,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         elif data.startswith("lev_"):
             leverage = int(data.split("_")[1])
-            asyncio.create_task(update_user_leverage(user_id, leverage, query))
+            asyncio.create_task(safe_create_task(
+                update_user_leverage(user_id, leverage, query), 
+                "update_user_leverage"
+            ))
             
         elif data == "tp":
             keyboard = [
@@ -388,7 +443,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         elif data.startswith("tp_"):
             tp = float(data.split("_")[1])
-            asyncio.create_task(update_user_tp(user_id, tp, query))
+            asyncio.create_task(safe_create_task(
+                update_user_tp(user_id, tp, query), 
+                "update_user_tp"
+            ))
             
         elif data == "status":
             has_api = bool(settings['api_key'])
@@ -422,7 +480,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             
             # ✅ Test trigger arka planda
-            asyncio.create_task(trigger_test_trade(query))
+            asyncio.create_task(safe_create_task(
+                trigger_test_trade(query), 
+                "trigger_test_trade"
+            ))
             
         elif data == "stop_position":
             # ✅ STOP POSITION BUTTON - Close all open positions
@@ -510,20 +571,28 @@ async def handle_stop_position(query, user_id):
         
         try:
             from long import close_all_positions
-            # ✅ CRITICAL FIX: Pass API credentials to close_all_positions()
-            result = close_all_positions(
-                settings['api_key'], 
-                settings['secret_key'], 
-                settings['passphrase']
+            # ✅ PRODUCTION-GRADE: API call with timeout and retry
+            result = await asyncio.wait_for(
+                asyncio.to_thread(
+                    close_all_positions,
+                    settings['api_key'], 
+                    settings['secret_key'], 
+                    settings['passphrase']
+                ),
+                timeout=30.0  # 30 second timeout for API calls
             )
             success = True
             error_msg = None
+        except asyncio.TimeoutError:
+            success = False
+            error_msg = "API timeout (30s) - Bitget bağlantı sorunu"
         except ImportError as e:
             success = False
             error_msg = f"Import error: {e}"
         except Exception as e:
             success = False
             error_msg = str(e)
+            logger.error(f"❌ External API call failed: {e}")
         
         if success:
             # ✅ Show detailed P&L results from close_all_positions

@@ -26,12 +26,12 @@ args = "P&L Monitor"
 name = "Working Telegram Bot"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "console"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python3 working_telegram_bot.py"
-
-[workflows.workflow.metadata]
-outputType = "console"
 
 [[workflows.workflow]]
 name = "P&L Monitor"
