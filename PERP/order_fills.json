@@ -1,55 +1,23 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1758009510363,
+    "requestTime": 1758011272726,
     "data": [
         {
-            "tradeId": "1351755347039248443",
+            "tradeId": "1351762737784578097",
             "symbol": "ZKCUSDT_UMCBL",
-            "orderId": "1351755346841575425",
-            "price": "0.8823",
-            "sizeQty": "16",
-            "fee": "-0.00847008",
+            "orderId": "1351762737586905090",
+            "price": "0.8924",
+            "sizeQty": "420",
+            "fee": "-0.2248848",
             "side": "open_long",
-            "fillAmount": "14.1168",
+            "fillAmount": "374.808",
             "profit": "0",
             "enterPointSource": "API",
             "tradeSide": "open_long",
             "holdMode": "double_hold",
             "takerMakerFlag": "taker",
-            "cTime": "1758009509811"
-        },
-        {
-            "tradeId": "1351755347039248441",
-            "symbol": "ZKCUSDT_UMCBL",
-            "orderId": "1351755346841575425",
-            "price": "0.8823",
-            "sizeQty": "230",
-            "fee": "-0.1217574",
-            "side": "open_long",
-            "fillAmount": "202.929",
-            "profit": "0",
-            "enterPointSource": "API",
-            "tradeSide": "open_long",
-            "holdMode": "double_hold",
-            "takerMakerFlag": "taker",
-            "cTime": "1758009509811"
-        },
-        {
-            "tradeId": "1351755347039248439",
-            "symbol": "ZKCUSDT_UMCBL",
-            "orderId": "1351755346841575425",
-            "price": "0.8822",
-            "sizeQty": "320",
-            "fee": "-0.1693824",
-            "side": "open_long",
-            "fillAmount": "282.304",
-            "profit": "0",
-            "enterPointSource": "API",
-            "tradeSide": "open_long",
-            "holdMode": "double_hold",
-            "takerMakerFlag": "taker",
-            "cTime": "1758009509811"
+            "cTime": "1758011271902"
         }
     ]
 }
