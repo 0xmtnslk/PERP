@@ -343,23 +343,27 @@ if __name__ == '__main__':
           # Get user ID from environment variable or default to main user (define OUTSIDE try block)
           user_id = int(os.getenv("USER_ID", "625972998"))
           try:
-              db_path = os.path.join(os.getcwd(), "trading_bot.db")
+              db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "trading_bot.db")
               conn = sqlite3.connect(db_path)
               cursor = conn.cursor()
               
-              cursor.execute("SELECT leverage FROM user_settings WHERE user_id = ?", (user_id,))
+              cursor.execute("SELECT leverage, amount_usdt FROM user_settings WHERE user_id = ?", (user_id,))
               result = cursor.fetchone()
               conn.close()
               
               if result:
                   user_leverage = int(result[0])
+                  user_amount = float(result[1])
                   print(f"🎯 Database leverage: {user_leverage}x (from Telegram)")
+                  print(f"💰 Database amount: ${user_amount} (from Telegram)")
               else:
                   print("🔍 No database leverage found, checking config...")
                   user_leverage = int(credentials.get("leverage", 0))
+                  user_amount = None
           except Exception as e:
               print(f"⚠️ Database leverage error: {e}, using config...")
               user_leverage = int(credentials.get("leverage", 0))
+              user_amount = None
           
           if user_leverage > 0:
               leverage = user_leverage
@@ -446,8 +450,16 @@ if __name__ == '__main__':
               # SMART CONFIG LOADING: DB → env → secret.json → default
               configured_open_USDT = 10.0  # Default minimum
               
-              # Try secret.json fallback if env is empty
-              if not credentials.get("open_USDT"):
+              # CHECK DATABASE AMOUNT FIRST (highest priority)
+              if 'user_amount' in locals() and user_amount is not None:
+                  configured_open_USDT = float(user_amount)
+                  print(f"💰 Using database amount: ${configured_open_USDT}")
+              # ENV second priority
+              elif credentials.get("open_USDT"):
+                  configured_open_USDT = float(credentials.get("open_USDT"))
+                  print(f"🌍 Using env amount: ${configured_open_USDT}")
+              # Try secret.json fallback if database and env empty
+              else:
                   try:
                       with open("secret.json") as f:
                           secret_data = json.load(f).get("bitget_example", {})
@@ -455,11 +467,6 @@ if __name__ == '__main__':
                           print(f"📄 Using secret.json amount: ${configured_open_USDT}")
                   except Exception as e:
                       print(f"⚠️ Secret.json read error: {e}, using default $10")
-              else:
-                  env_amount = credentials.get("open_USDT")
-                  if env_amount:
-                      configured_open_USDT = float(env_amount)
-                      print(f"🌍 Using env amount: ${configured_open_USDT}")
               
               # Enforce minimum 10 USDT for Bitget requirements
               configured_open_USDT = max(10.0, configured_open_USDT)
