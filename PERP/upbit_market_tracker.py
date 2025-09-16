@@ -4,6 +4,7 @@ import json
 import time
 import os
 import sys
+import threading
 from datetime import datetime
 
 # Ana dizini sys.path'e ekle (notification_config import etmek için)
@@ -111,9 +112,29 @@ def save_seen_markets(markets_set):
   with open(seen_markets_file, 'w', encoding='utf-8') as f:
     json.dump(data, f, indent=4, ensure_ascii=False)
 
+def heartbeat_writer():
+  """Health file'ını her 60 saniyede bir günceller"""
+  health_file = "market_tracker_health.txt"
+  while True:
+    try:
+      with open(health_file, 'w') as f:
+        f.write(f"{datetime.now().isoformat()}\n")
+    except Exception as e:
+      print(f"❌ Health file yazma hatası: {e}")
+    time.sleep(60)
+
+def start_heartbeat():
+  """Heartbeat thread'ini başlat"""
+  heartbeat_thread = threading.Thread(target=heartbeat_writer, daemon=True)
+  heartbeat_thread.start()
+  print("💓 Market Tracker heartbeat başlatıldı")
+
 def main():
   # Durum dosyalarını kontrollü olarak başlat
   initialize_state_files()
+  
+  # Heartbeat başlat
+  start_heartbeat()
   
   # Daha önce görülen marketleri yükle
   seen_markets = load_seen_markets()

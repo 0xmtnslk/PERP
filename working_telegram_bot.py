@@ -176,6 +176,23 @@ async def safe_create_task(coro, task_name: str = "unknown"):
         # Don't re-raise - keep bot running
         return None
 
+def heartbeat_writer():
+    """Health file'ını her 60 saniyede bir günceller"""
+    health_file = "telegram_bot_health.txt"
+    while True:
+        try:
+            with open(health_file, 'w') as f:
+                f.write(f"{datetime.now().isoformat()}\n")
+        except Exception as e:
+            print(f"❌ Health file yazma hatası: {e}")
+        time.sleep(60)
+
+def start_heartbeat():
+    """Heartbeat thread'ini başlat"""
+    heartbeat_thread = threading.Thread(target=heartbeat_writer, daemon=True)
+    heartbeat_thread.start()
+    print("💓 Telegram Bot heartbeat başlatıldı")
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -828,6 +845,9 @@ def main():
     print("✅ Fast callback + background tasks")
     print("✅ Robust error handling active")
     print("✅ User state timeout protection")
+    
+    # Start heartbeat for supervisor health monitoring
+    start_heartbeat()
     
     # ✅ PERIODIC STATE CLEANUP (will run in background when needed)
     async def periodic_state_cleanup(context):

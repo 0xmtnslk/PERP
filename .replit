@@ -22,6 +22,10 @@ args = "Working Telegram Bot"
 task = "workflow.run"
 args = "P&L Monitor"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Auto-Restart Supervisor"
+
 [[workflows.workflow]]
 name = "Working Telegram Bot"
 author = "agent"
@@ -40,6 +44,17 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python3 pnl_monitor.py"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "Auto-Restart Supervisor"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 supervisor_bot.py"
 
 [workflows.workflow.metadata]
 outputType = "console"

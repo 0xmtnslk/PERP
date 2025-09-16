@@ -7,6 +7,7 @@ Upbit'in duyuru sayfasından yeni coin listeleme duyurularını takip eder
 import os
 import json
 import time
+import threading
 import requests
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
@@ -45,6 +46,26 @@ class UpbitAnnouncementScraper:
             r'market.*launch',  # market launch
             r'trading.*support',  # trading support
         ]
+        
+        # Heartbeat başlat
+        self.start_heartbeat()
+    
+    def heartbeat_writer(self):
+        """Health file'ını her 60 saniyede bir günceller"""
+        health_file = "upbit_monitor_health.txt"
+        while True:
+            try:
+                with open(health_file, 'w') as f:
+                    f.write(f"{datetime.now().isoformat()}\n")
+            except Exception as e:
+                print(f"❌ Health file yazma hatası: {e}")
+            time.sleep(60)
+    
+    def start_heartbeat(self):
+        """Heartbeat thread'ini başlat"""
+        heartbeat_thread = threading.Thread(target=self.heartbeat_writer, daemon=True)
+        heartbeat_thread.start()
+        print("💓 Upbit Monitor heartbeat başlatıldı")
         
     def get_announcements(self):
         """Upbit duyuru sayfasından son duyuruları al (Production Ready HTTP + Selenium)"""
