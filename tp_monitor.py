@@ -71,7 +71,7 @@ class TakeProfitMonitor:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT bitget_api_key, bitget_secret_key, bitget_passphrase, is_configured 
+                SELECT api_key, secret_key, passphrase, is_configured 
                 FROM user_api_keys WHERE user_id = ?
             """, (user_id,))
             
