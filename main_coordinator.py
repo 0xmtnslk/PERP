@@ -101,8 +101,7 @@ class TradingSystemCoordinator:
             ("Secret Manager", "secret.py", "🔐 API key yönetimi"),
             ("Upbit Monitor", os.path.join("PERP", "upbit_market_tracker.py"), "👀 Upbit yeni coin taraması"),
             ("Upbit Announcements", "upbit_announcement_scraper.py", "📢 Upbit duyuru sayfası taraması"),
-            ("Advanced Telegram Bot", "advanced_telegram_bot.py", "🤖 Gelişmiş Telegram kullanıcı arayüzü"),
-            ("Telegram Converter", "telegram_degisken.py", "📱 Telegram veri dönüştürme"),
+            ("Working Telegram Bot", "working_telegram_bot.py", "🤖 Crash-proof Telegram kullanıcı arayüzü"),
             ("TP Monitor", "tp_monitor.py", "📈 Take Profit monitoring sistemi")
         ]
         
@@ -122,7 +121,7 @@ class TradingSystemCoordinator:
         # User trading engine'i başlat
         print("\n✅ Multi-User Auto-Trading System başlatılıyor:")
         print("   - user_trading_engine.py (Çok kullanıcılı ticaret sistemi)")
-        print("   - advanced_telegram_bot.py (Gelişmiş kullanıcı yönetimi)")
+        print("   - working_telegram_bot.py (Crash-proof kullanıcı yönetimi)")
         print("   - tp_monitor.py (Otomatik TP monitoring)")
         print("   - Her kullanıcı için ayrı izolasyon ve ayarlar")
         print("   - Manuel ve otomatik işlem desteği")
