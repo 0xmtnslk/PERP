@@ -107,7 +107,7 @@ class TakeProfitMonitor:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT trading_amount_usdt, take_profit_percentage, leverage, auto_trading, notifications, emergency_stop 
+                SELECT amount_usdt, take_profit_percent, leverage, auto_trading, emergency_stop 
                 FROM user_settings WHERE user_id = ?
             """, (user_id,))
             
@@ -120,8 +120,7 @@ class TakeProfitMonitor:
                     'take_profit': result[1],
                     'leverage': result[2],
                     'auto_trading': bool(result[3]),
-                    'notifications': bool(result[4]),
-                    'emergency_stop': bool(result[5])
+                    'emergency_stop': bool(result[4])
                 }
             return None
             
