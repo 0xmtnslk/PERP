@@ -53,20 +53,8 @@ class TakeProfitMonitor:
             return []
     
     def get_user_api_keys(self, user_id: int):
-        """Kullanıcının API anahtarlarını al"""
+        """Kullanıcının API anahtarlarını al - working_telegram_bot plain text format"""
         try:
-            # Import encryption here to avoid circular imports
-            import hashlib
-            import base64
-            from cryptography.fernet import Fernet
-            
-            # Setup encryption (same as user_trading_engine.py)
-            password = os.environ.get('ENCRYPTION_KEY', 'default_encryption_key_change_in_production')
-            salt = b'stable_salt_value_'
-            kdf_key = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100000)
-            encryption_key = base64.urlsafe_b64encode(kdf_key)
-            cipher = Fernet(encryption_key)
-            
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
@@ -79,21 +67,13 @@ class TakeProfitMonitor:
             conn.close()
             
             if result:
-                # Decrypt the API keys
-                try:
-                    api_key = cipher.decrypt(result[0].encode()).decode() if result[0] else ""
-                    secret_key = cipher.decrypt(result[1].encode()).decode() if result[1] else ""
-                    passphrase = cipher.decrypt(result[2].encode()).decode() if result[2] else ""
-                    
-                    return {
-                        'api_key': api_key,
-                        'secret_key': secret_key, 
-                        'passphrase': passphrase,
-                        'is_configured': bool(result[3])
-                    }
-                except Exception as e:
-                    logger.error(f"Error decrypting API keys for user {user_id}: {e}")
-                    return None
+                # API keys are stored in plain text by working_telegram_bot.py
+                return {
+                    'api_key': result[0] if result[0] else "",
+                    'secret_key': result[1] if result[1] else "", 
+                    'passphrase': result[2] if result[2] else "",
+                    'is_configured': bool(result[3])
+                }
             return None
             
         except Exception as e:
