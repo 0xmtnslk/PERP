@@ -451,7 +451,7 @@ if __name__ == '__main__':
               configured_open_USDT = 10.0  # Default minimum
               
               # CHECK DATABASE AMOUNT FIRST (highest priority)
-              if 'user_amount' in locals() and user_amount is not None:
+              if 'user_amount' in locals() and user_amount is not None and user_amount > 0:
                   configured_open_USDT = float(user_amount)
                   print(f"💰 Using database amount: ${configured_open_USDT}")
               # ENV second priority

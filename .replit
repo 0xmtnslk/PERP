@@ -60,6 +60,6 @@ args = "python3 pnl_monitor.py"
 outputType = "console"
 
 [deployment]
-deploymentTarget = "gce"
+deploymentTarget = "vm"
 run = ["python3", "main_coordinator.py"]
 ignorePorts = true
