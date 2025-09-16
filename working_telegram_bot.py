@@ -273,6 +273,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # ✅ Test trigger arka planda
             asyncio.create_task(trigger_test_trade(query))
             
+        elif data == "stop_position":
+            # ✅ STOP POSITION BUTTON - Close all open positions
+            await handle_stop_position(query, user_id)
+            
         elif data == "back":
             # ✅ Ana menü güvenli şekilde
             await send_menu(query.message.chat_id, context, user_id)
@@ -326,6 +330,82 @@ async def update_user_tp(user_id, tp, query):
         )
     except Exception as e:
         logger.error(f"TP update error: {e}")
+
+async def handle_stop_position(query, user_id):
+    """Handle stop position button - close all positions"""
+    try:
+        await query.edit_message_text(
+            "🚨 **POZİSYON KAPATILIYOR...**\n\n"
+            "⏳ Tüm açık pozisyonlar kapalınıyor...\n"
+            "💰 Kar/zarar hesaplanıyor...",
+            parse_mode='Markdown'
+        )
+        
+        # Get user's API credentials
+        settings = bot.get_user_settings(user_id)
+        if not settings or not settings['api_key']:
+            await query.edit_message_text(
+                "❌ **HATA**\n\n"
+                "API anahtarları bulunamadı!\n"
+                "🔑 Önce API ayarlarını yapın",
+                parse_mode='Markdown'
+            )
+            return
+        
+        # Use existing long.py close_all_positions function directly
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), 'PERP'))
+        
+        try:
+            from long import close_all_positions
+            # ✅ CRITICAL FIX: Pass API credentials to close_all_positions()
+            result = close_all_positions(
+                settings['api_key'], 
+                settings['secret_key'], 
+                settings['passphrase']
+            )
+            success = True
+            error_msg = None
+        except ImportError as e:
+            success = False
+            error_msg = f"Import error: {e}"
+        except Exception as e:
+            success = False
+            error_msg = str(e)
+        
+        if success:
+            # ✅ Show detailed P&L results from close_all_positions
+            pnl_info = ""
+            if isinstance(result, dict):
+                total_pnl = result.get('total_pnl', 0)
+                positions_count = result.get('positions_count', 0)
+                pnl_emoji = "🟢" if total_pnl >= 0 else "🔴"
+                pnl_info = f"\n💰 **P&L:** {pnl_emoji} ${total_pnl:.2f}\n📊 **Pozisyonlar:** {positions_count} adet"
+            
+            await query.edit_message_text(
+                f"✅ **POZİSYONLAR KAPATILDI!**{pnl_info}\n\n"
+                f"📊 **Durumu:** Tüm pozisyonlar kapatıldı\n"
+                f"💰 **Detaylar:** Kar/zarar hesaplandı\n\n"
+                f"✅ İşlem tamamlandı!",
+                parse_mode='Markdown'
+            )
+        else:
+            await query.edit_message_text(
+                f"❌ **POZISYON KAPATMA HATASI**\n\n"
+                f"Hata: {error_msg or 'Bilinmeyen hata'}\n\n"
+                f"🔄 Tekrar deneyin veya manuel kontrol edin",
+                parse_mode='Markdown'
+            )
+            
+    except Exception as e:
+        logger.error(f"Stop position error: {e}")
+        await query.edit_message_text(
+            "❌ **SİSTEM HATASI**\n\n"
+            "Pozisyon kapatma sırasında hata!\n"
+            "🛠️ Teknik destek ile iletişime geçin",
+            parse_mode='Markdown'
+        )
 
 async def trigger_test_trade(query):
     """Test trade'i arka planda tetikle"""

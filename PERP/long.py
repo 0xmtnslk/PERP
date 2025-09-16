@@ -11,6 +11,32 @@ import math # Tam sayiya yuvarlamak icin math modulunu ekle
 def get_timestamp():
   return int(time.time() * 1000)
 
+def send_telegram_notification(message, user_id):
+    """Send Telegram notification to user after successful trade"""
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not bot_token:
+        print("⚠️ TELEGRAM_BOT_TOKEN not found, skipping notification")
+        return False
+    
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = {
+        "chat_id": user_id,
+        "text": message,
+        "parse_mode": "HTML"
+    }
+    
+    try:
+        response = requests.post(url, json=payload, timeout=10)
+        if response.status_code == 200:
+            print(f"✅ Telegram notification sent to user {user_id}")
+            return True
+        else:
+            print(f"❌ Telegram notification failed: {response.status_code}")
+            return False
+    except requests.RequestException as e:
+        print(f"❌ Telegram notification error: {e}")
+        return False
+
 def create_signature(message, secret_key):
   mac = hmac.new(bytes(secret_key, encoding='utf8'), bytes(message, encoding='utf-8'), digestmod='sha256')
   d = mac.digest()
@@ -315,8 +341,8 @@ if __name__ == '__main__':
           
           user_leverage = 0
           try:
-              # User ID from user_trading_engine.py context (625972998)
-              user_id = 625972998  # Main user
+              # Get user ID from environment variable or default to main user
+              user_id = int(os.getenv("USER_ID", "625972998"))
               db_path = os.path.join(os.getcwd(), "trading_bot.db")
               conn = sqlite3.connect(db_path)
               cursor = conn.cursor()
@@ -498,6 +524,27 @@ if __name__ == '__main__':
           if post_response.get('code') == '00000' and post_response.get('data'):
               order_id = post_response['data'].get('orderId')
               print(f"Order ID: {order_id}")
+              
+              # INSTANT TELEGRAM NOTIFICATION after successful order
+              # Get user_id from environment or the database lookup above
+              notification_user_id = user_id  # Use the user_id from leverage lookup
+              notification_message = f"""
+🚀 <b>YENİ POZİSYON AÇILDI!</b>
+
+💰 <b>Coin:</b> {api_symbol}
+📊 <b>Miktar:</b> ${actual_open_USDT:.2f}
+⚡ <b>Leverage:</b> {leverage}x
+🔒 <b>Margin:</b> Isolated
+💹 <b>Fiyat:</b> ${float(coin_price['last_price']):.4f}
+📋 <b>Order ID:</b> {order_id}
+
+✅ İşlem başarıyla tamamlandı!
+"""
+              
+              if send_telegram_notification(notification_message, notification_user_id):
+                  print(f"✅ Order notification sent to Telegram user {notification_user_id}")
+              else:
+                  print(f"⚠️ Could not send Telegram notification to user {notification_user_id}")
           else:
               print(f"❌ İşlem hatası: {post_response.get('msg', 'Bilinmeyen hata')}")
               exit(1)

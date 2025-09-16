@@ -22,6 +22,10 @@ args = "Crypto Trading System"
 task = "workflow.run"
 args = "Working Telegram Bot"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "P&L Monitor"
+
 [[workflows.workflow]]
 name = "Crypto Trading System"
 author = "agent"
@@ -40,6 +44,17 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python3 working_telegram_bot.py"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow]]
+name = "P&L Monitor"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python3 pnl_monitor.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
