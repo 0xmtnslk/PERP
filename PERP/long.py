@@ -294,17 +294,17 @@ if __name__ == '__main__':
               usable_usdt = available_usdt * 0.985
               print(f"💰 Usable USDT (with buffer): {usable_usdt}")
               
-              # FIXED: Force small order size to avoid balance error
-              # Use minimum possible order - Bitget minimum is 1 USDT for market orders
-              test_order_usdt = 1.0  # Start with 1 USDT test order
-              print(f"🔧 FIXED: Using minimum test order: {test_order_usdt} USDT")
+              # RESTORE USER'S CONFIGURED AMOUNT (gerçek $10 alım için)
+              configured_open_USDT = float(credentials.get("open_USDT", 10))  # User's $10 setting
+              actual_open_USDT = min(configured_open_USDT, usable_usdt)
+              print(f"💰 User configured: ${configured_open_USDT}, Available: ${usable_usdt}, Using: ${actual_open_USDT}")
               
-              # Ensure we have enough balance
-              if usable_usdt < test_order_usdt:
-                  print(f"❌ INSUFFICIENT BALANCE: Need {test_order_usdt}, have {usable_usdt}")
+              # Ensure we have enough balance (minimum 1 USDT)
+              if actual_open_USDT < 1.0:
+                  print(f"❌ INSUFFICIENT BALANCE: Need minimum $1, have ${actual_open_USDT}")
                   exit(1)
                   
-              coin_size = test_order_usdt * leverage / float(coin_price['last_price'])
+              coin_size = actual_open_USDT * leverage / float(coin_price['last_price'])
               print(f"🔍 SAFE coin_size={coin_size} (balance-checked)")
           else:
               print(f"❌ Balance check failed: {balance_data}")

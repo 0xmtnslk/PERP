@@ -1,9 +1,9 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1758006205402,
+    "requestTime": 1758006605824,
     "data": {
-        "clientOid": "auto_trade_1758006205285",
-        "orderId": "1351741487393153029"
+        "clientOid": "auto_trade_1758006605674",
+        "orderId": "1351743166851194881"
     }
 }

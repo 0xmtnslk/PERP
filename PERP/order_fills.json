@@ -1,23 +1,23 @@
 {
     "code": "00000",
     "msg": "success",
-    "requestTime": 1758006205833,
+    "requestTime": 1758006606310,
     "data": [
         {
-            "tradeId": "1351741487607603245",
+            "tradeId": "1351743167057256519",
             "symbol": "ZKCUSDT_UMCBL",
-            "orderId": "1351741487393153029",
-            "price": "0.8676",
-            "sizeQty": "11",
-            "fee": "-0.00572616",
+            "orderId": "1351743166851194881",
+            "price": "0.8733",
+            "sizeQty": "114",
+            "fee": "-0.05973372",
             "side": "open_long",
-            "fillAmount": "9.5436",
+            "fillAmount": "99.5562",
             "profit": "0",
             "enterPointSource": "API",
             "tradeSide": "open_long",
             "holdMode": "double_hold",
             "takerMakerFlag": "taker",
-            "cTime": "1758006205465"
+            "cTime": "1758006605877"
         }
     ]
 }
