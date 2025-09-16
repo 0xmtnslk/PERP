@@ -120,6 +120,9 @@ def set_leverage(api_key, secret_key, passphrase, symbol, leverage):
         print(f"ERROR: Request failed setting leverage: {e}", file=sys.stderr)
         return False
 
+# NOTE: set_margin_mode() function moved to PERP/long.py to avoid conflicts
+# The main implementation is in PERP/long.py with proper fail-safe logic
+
 def main():
     """Main leverage setting function"""
     print("🔧 Starting leverage setting script...")

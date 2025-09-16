@@ -193,6 +193,68 @@ def close_all_positions(api_key, api_secret_key, passphrase):
           'positions': active_positions
       }
 
+# Set margin mode to isolated for better risk management
+def set_margin_mode(api_key, secret_key, passphrase, symbol, margin_mode="isolated"):
+    """Set margin mode for symbol using Bitget API V2"""
+    timestamp = str(get_timestamp())
+    method = "POST"
+    request_path = "/api/v2/mix/account/set-margin-mode"
+    
+    # V2 API: Remove _UMCBL suffix from symbol
+    api_symbol = symbol.replace("_UMCBL", "")
+    
+    params = {
+        "symbol": api_symbol,  # Keep uppercase as expected by Bitget v2
+        "productType": "USDT-FUTURES",
+        "marginCoin": "USDT",  # Uppercase as expected by Bitget v2
+        "marginMode": margin_mode
+    }
+    body = json.dumps(params, separators=(',', ':'))
+
+    # Create signature
+    message = timestamp + method + request_path + body
+    signature_obj = hmac.new(secret_key.encode('utf-8'), message.encode('utf-8'), digestmod='sha256')
+    signature_b64 = base64.b64encode(signature_obj.digest()).decode()
+
+    # Headers
+    headers = {
+        "ACCESS-KEY": api_key,
+        "ACCESS-SIGN": signature_b64,
+        "ACCESS-PASSPHRASE": passphrase,
+        "ACCESS-TIMESTAMP": timestamp,
+        "Content-Type": "application/json",
+        "locale": "en-US"
+    }
+
+    # Send request
+    url = "https://api.bitget.com" + request_path
+    
+    try:
+        response = requests.post(url, headers=headers, data=body, timeout=10)
+        
+        print(f"🔧 Margin Mode API Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"🔧 Margin Mode API Response: {data}")
+            
+            if data['code'] == '00000':
+                print(f"✅ MARGIN_MODE_CONFIRMED={margin_mode} for {symbol}")
+                return True
+            else:
+                print(f"❌ Margin mode setting FAILED: {data['msg']} (code: {data['code']})")
+                print(f"🚨 CRITICAL: Order will proceed with CURRENT margin mode, risk not isolated!")
+                # Return False for non-00000 responses - critical for risk management
+                return False
+        else:
+            print(f"❌ HTTP error setting margin mode: {response.status_code}")
+            print(f"🚨 CRITICAL: Cannot set isolated margin, risk management compromised!")
+            return False
+            
+    except requests.RequestException as e:
+        print(f"ERROR: Request failed setting margin mode: {e}")
+        return False
+
 # API'den maxLeverage degerini al
 def get_max_leverage(symbol):
   url = f"https://api.bitget.com/api/mix/v1/market/symbol-leverage?symbol={symbol}"
@@ -386,6 +448,14 @@ if __name__ == '__main__':
               exit(1)
  
 
+          # Set isolated margin mode before placing order for better risk management
+          print(f"🔧 Setting isolated margin mode for {symbol}...")
+          if not set_margin_mode(API_KEY, API_SECRET_KEY, PASS_PHRASE, symbol, "isolated"):
+              print(f"❌ CRITICAL: Could not set isolated margin mode for {symbol}")
+              print(f"🚨 ABORTING ORDER: Risk management compromised, cannot proceed with cross margin")
+              exit(1)
+          print(f"✅ Isolated margin mode confirmed for {symbol}, proceeding with order")
+          
           # POST istegi icin imza olusturma - NEW API V2 + MARKET ORDER
           timestamp = str(get_timestamp())
           request_path = "/api/v2/mix/order/place-order"
@@ -396,7 +466,7 @@ if __name__ == '__main__':
           params = {
               "symbol": api_symbol,
               "productType": "USDT-FUTURES",
-              "marginMode": "crossed",
+              "marginMode": "isolated",
               "marginCoin": "USDT",
               "size": coin_size,
               "side": "buy",
