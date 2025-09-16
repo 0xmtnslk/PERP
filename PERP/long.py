@@ -285,6 +285,44 @@ if __name__ == '__main__':
               leverage = float(maxLeverage)
               print(f"📊 Fallback max leverage: {leverage}x")
 
+          # ARCHITECT FIX: Define api_symbol BEFORE using it!
+          api_symbol = symbol.replace("_UMCBL", "")
+          print(f"🔧 V2 API Symbol: {symbol} → {api_symbol}")
+
+          # SET LEVERAGE FIRST (Bitget API v2) - BEFORE ORDER!
+          print(f"🎯 Setting leverage to {leverage}x for {api_symbol}...")
+          leverage_timestamp = str(get_timestamp())
+          leverage_request_path = "/api/v2/mix/account/set-leverage"
+          
+          leverage_params = {
+              "symbol": api_symbol,  # Now properly defined!
+              "productType": "USDT-FUTURES",
+              "marginCoin": "USDT", 
+              "leverage": str(int(leverage)),  # Convert to string
+              "holdSide": "long"
+          }
+          leverage_body = json.dumps(leverage_params)
+          leverage_sign = create_signature(pre_hash(leverage_timestamp, "POST", leverage_request_path, leverage_body), API_SECRET_KEY)
+          
+          leverage_headers = {
+              "ACCESS-KEY": API_KEY,
+              "ACCESS-SIGN": leverage_sign,
+              "ACCESS-PASSPHRASE": PASS_PHRASE,
+              "ACCESS-TIMESTAMP": leverage_timestamp,
+              "Content-Type": "application/json"
+          }
+          
+          leverage_url = "https://api.bitget.com" + leverage_request_path
+          leverage_response = requests.post(leverage_url, headers=leverage_headers, data=leverage_body)
+          leverage_result = leverage_response.json()
+          print(f"🔧 Leverage API Response: {leverage_result}")
+          
+          if leverage_result.get('code') == '00000':
+              print(f"✅ Leverage set to {leverage}x successfully!")
+          else:
+              print(f"⚠️ Leverage setting failed: {leverage_result.get('msg', 'Unknown error')}")
+              # Continue anyway - order placement might still work
+              
           # Coin fiyatini %1.5 arttir
           coin_price_long = float(coin_price['last_price']) * 1.015
           
