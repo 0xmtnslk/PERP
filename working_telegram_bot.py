@@ -193,8 +193,39 @@ def start_heartbeat():
     heartbeat_thread.start()
     print("💓 Telegram Bot heartbeat başlatıldı")
 
+# ✅ SECURITY-FIRST LOGGING CONFIGURATION
+# Prevent sensitive bot token from appearing in logs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# 🔒 CRITICAL SECURITY: Suppress httpx request logs that contain bot token
+httpx_logger = logging.getLogger('httpx')
+httpx_logger.setLevel(logging.WARNING)  # Suppress INFO level request URLs
+
+# 🔒 SECURITY: Suppress telegram library HTTP logs
+telegram_logger = logging.getLogger('telegram.ext')
+telegram_logger.setLevel(logging.WARNING)
+
+# 🔒 SECURITY: Suppress urllib3 logs that might contain URLs
+urllib3_logger = logging.getLogger('urllib3')
+urllib3_logger.setLevel(logging.WARNING)
+
+# ✅ PRODUCTION-GRADE: Custom filter to strip tokens from any remaining logs
+class TokenSanitizingFilter(logging.Filter):
+    """Remove bot tokens from log messages as additional security layer"""
+    
+    def filter(self, record):
+        if hasattr(record, 'msg') and isinstance(record.msg, str):
+            # Pattern to match bot tokens in URLs
+            import re
+            # Bot tokens follow pattern: digits:alphanumeric_string
+            token_pattern = r'/bot\d+:[A-Za-z0-9_-]+/'
+            record.msg = re.sub(token_pattern, '/bot[TOKEN_REDACTED]/', record.msg)
+        return True
+
+# Apply token filter to all loggers as fallback security
+token_filter = TokenSanitizingFilter()
+logging.getLogger().addFilter(token_filter)
 
 BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 

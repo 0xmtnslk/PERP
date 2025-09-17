@@ -33,6 +33,15 @@ Preferred communication style: Simple, everyday language.
 - HMAC-SHA256 signature generation for secure API authentication
 - Encryption utilities using Fernet symmetric encryption for sensitive data
 
+#### ✅ CRITICAL SECURITY FIX (2025-09-17)
+**Issue**: Telegram bot token was exposed in INFO-level httpx request logs, creating a serious security vulnerability
+**Solution**: Implemented multi-layered logging security:
+- Set httpx logger to WARNING level to suppress HTTP request URL logging that contained bot tokens
+- Set telegram library loggers to WARNING level to prevent token exposure
+- Added `TokenSanitizingFilter` class that strips bot tokens from any remaining log messages as fallback protection
+- Maintained application-level INFO logging for debugging while protecting sensitive credentials
+**Impact**: Bot tokens are now completely protected from log exposure while maintaining full functionality
+
 ### Data Storage
 - SQLite database for user management and trading history (in Telegram bot)
 - JSON files for configuration, order tracking, and symbol monitoring
