@@ -79,7 +79,28 @@ class ProductionSupervisor:
         signal.signal(signal.SIGTERM, self.signal_handler)
         signal.signal(signal.SIGINT, self.signal_handler)
         
+        # Supervisor heartbeat for outer watchdog
+        self.heartbeat_file = "production/monitoring/supervisor_heartbeat.txt"
+        self.start_heartbeat()
+        
         logger.info("🚀 PRODUCTION SUPERVISOR INITIALIZED")
+    
+    def start_heartbeat(self):
+        """Start heartbeat thread for outer watchdog"""
+        import threading
+        heartbeat_thread = threading.Thread(target=self.heartbeat_writer, daemon=True)
+        heartbeat_thread.start()
+        logger.info("💓 Supervisor heartbeat started")
+    
+    def heartbeat_writer(self):
+        """Write heartbeat file every 30 seconds"""
+        while self.running:
+            try:
+                with open(self.heartbeat_file, 'w') as f:
+                    f.write(f"{datetime.now().isoformat()}\n")
+            except Exception as e:
+                logger.error(f"❌ Heartbeat write error: {e}")
+            time.sleep(30)
     
     def signal_handler(self, signum, frame):
         """Handle shutdown signals gracefully"""

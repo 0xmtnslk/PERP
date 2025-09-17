@@ -30,7 +30,10 @@ class UserTradingEngine:
         # Health monitoring
         self.health_file = "production/monitoring/user_trading_engine_health.txt"
         self.start_heartbeat()
+        
+        # Use same database as telegram bot (root directory)
         self.db_path = os.path.join(self.BASE_DIR, "trading_bot.db")
+        logger.info(f"📍 Using database: {self.db_path}")
         self.running = False
         self.user_threads = {}
         
@@ -51,8 +54,8 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT api_key, secret_key, passphrase, is_configured 
-                FROM user_api_keys WHERE user_id = ?
+                SELECT api_key, secret_key, passphrase, active 
+                FROM user_settings WHERE user_id = ?
             """, (user_id,))
             
             result = cursor.fetchone()
@@ -65,11 +68,14 @@ class UserTradingEngine:
                     secret_key = result[1] if result[1] else ""
                     passphrase = result[2] if result[2] else ""
                     
+                    # Check if API keys are configured
+                    is_configured = api_key and secret_key and passphrase
+                    
                     return {
                         'api_key': api_key,
                         'secret_key': secret_key, 
                         'passphrase': passphrase,
-                        'is_configured': bool(result[3])
+                        'is_configured': bool(is_configured)
                     }
                 except Exception as e:
                     logger.error(f"Error getting API keys for user {user_id}: {e}")
@@ -130,10 +136,12 @@ class UserTradingEngine:
             cursor = conn.cursor()
             
             cursor.execute("""
-                SELECT DISTINCT s.user_id 
-                FROM user_settings s 
-                JOIN user_api_keys a ON s.user_id = a.user_id
-                WHERE s.auto_trading = 1 AND IFNULL(s.emergency_stop,0) = 0 AND IFNULL(a.is_configured,0) = 1
+                SELECT DISTINCT user_id 
+                FROM user_settings 
+                WHERE active = 1 
+                  AND api_key IS NOT NULL AND api_key != ''
+                  AND secret_key IS NOT NULL AND secret_key != ''
+                  AND passphrase IS NOT NULL AND passphrase != ''
             """)
             
             users = [row[0] for row in cursor.fetchall()]
