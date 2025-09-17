@@ -1,0 +1,10 @@
+{
+  "timestamp": "2025-09-17T07:08:28.818771",
+  "running_services": [
+    "\ud83e\udd16 Telegram Bot",
+    "\ud83d\udc40 Upbit Monitor",
+    "\ud83d\udcca Market Tracker"
+  ],
+  "failed_services": [],
+  "total_services": 3
+}

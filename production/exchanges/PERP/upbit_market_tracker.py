@@ -5,14 +5,23 @@ import time
 import os
 import sys
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 
-# Ana dizini sys.path'e ekle (notification_config import etmek için)
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# notification_config import etmek için production/core dizinini sys.path'e ekle
+current_file_path = os.path.abspath(__file__)
+production_dir = os.path.dirname(os.path.dirname(os.path.dirname(current_file_path)))  # production/
+core_dir = os.path.join(production_dir, 'core')
+sys.path.append(core_dir)
 from notification_config import notification_config
 
-# Kullanicinin ev dizininde bir alt dizin olustur
-BASE_DIR = os.path.join(os.getcwd(), "PERP")
+# PERP dizini - yeni directory structure ile uyumlu
+# Eğer production/exchanges/PERP içindeyse, bu dizini kullan
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir.endswith('production/exchanges/PERP'):
+    BASE_DIR = current_dir
+else:
+    # Backward compatibility için PERP dizinini kullan
+    BASE_DIR = os.path.join(os.getcwd(), "PERP")
 
 # Dizinin var olup olmadigini kontrol et, yoksa olustur
 if not os.path.exists(BASE_DIR):
@@ -114,7 +123,7 @@ def save_seen_markets(markets_set):
 
 def heartbeat_writer():
   """Health file'ını her 60 saniyede bir günceller"""
-  health_file = "market_tracker_health.txt"
+  health_file = "production/monitoring/market_tracker_health.txt"
   while True:
     try:
       with open(health_file, 'w') as f:
@@ -128,6 +137,45 @@ def start_heartbeat():
   heartbeat_thread = threading.Thread(target=heartbeat_writer, daemon=True)
   heartbeat_thread.start()
   print("💓 Market Tracker heartbeat başlatıldı")
+
+def check_announcement_coins():
+  """Announcement scraper'dan gelen yeni coin tespitlerini kontrol et"""
+  try:
+    announcement_file = notification_config.announcement_coins_file
+    if os.path.exists(announcement_file):
+      with open(announcement_file, 'r', encoding='utf-8') as f:
+        announcements = json.load(f)
+      
+      # Son 10 dakika içindeki duyuruları kontrol et
+      cutoff_time = datetime.now() - timedelta(minutes=10)
+      
+      new_coins_from_announcements = []
+      for announcement in announcements:
+        try:
+          announcement_time = datetime.fromisoformat(announcement['timestamp'])
+          if announcement_time > cutoff_time:
+            coin_data = announcement['coin_data']
+            if 'symbols' in coin_data:
+              for symbol in coin_data['symbols']:
+                # USDT market formatına çevir
+                market_name = f'USDT-{symbol}'
+                new_coins_from_announcements.append({
+                  'market': market_name,
+                  'korean_name': coin_data.get('title', ''),
+                  'english_name': symbol,
+                  'source': 'announcement_scraper',
+                  'detection_time': announcement['timestamp']
+                })
+                print(f"📢 Announcement'dan yeni coin: {market_name}")
+        except Exception as e:
+          print(f"⚠️ Announcement parsing hatası: {e}")
+          continue
+      
+      return new_coins_from_announcements
+  except Exception as e:
+    print(f"⚠️ Announcement dosyası okuma hatası: {e}")
+  
+  return []
 
 def main():
   # Durum dosyalarını kontrollü olarak başlat
@@ -173,17 +221,41 @@ def main():
             if market not in old_markets_set and market not in seen_markets:
               truly_new_markets.append(market)
           
+          # Announcement scraper'dan gelen yeni coinleri de kontrol et
+          announcement_coins = check_announcement_coins()
+          for coin in announcement_coins:
+            market = coin['market']
+            if market not in old_markets_set and market not in seen_markets:
+              if market not in truly_new_markets:
+                truly_new_markets.append(market)
+                print(f"📢 Announcement'dan ek yeni coin: {market}")
+          
           if truly_new_markets:
-              # Yeni market'ların full data'sını al
-              new_pairs = [pair for pair in new_data if pair['market'] in truly_new_markets]
-              append_new_pairs_to_file([new_pairs[-1]])
-              print(f"{datetime.now()}: YENİ COIN TESPİT EDİLDİ!")
-              print(f"Yeni eklenen ciftler: {[p['market'] for p in new_pairs]}")
+              # Yeni market'ların full data'sını al (API + Announcement)
+              api_new_pairs = [pair for pair in new_data if pair['market'] in truly_new_markets]
               
-              # Seen markets'e yeni marketleri ekle
-              seen_markets.update(truly_new_markets)
-              save_seen_markets(seen_markets)
-              print(f"💾 Seen markets güncellendi: {len(seen_markets)} total")
+              # Announcement coins için de pair data oluştur
+              combined_new_pairs = api_new_pairs.copy()
+              for coin in announcement_coins:
+                if coin['market'] in truly_new_markets:
+                  # API'de bulunamazsa announcement data'sından pair oluştur
+                  if not any(p['market'] == coin['market'] for p in api_new_pairs):
+                    combined_new_pairs.append({
+                      'market': coin['market'],
+                      'korean_name': coin['korean_name'],
+                      'english_name': coin['english_name']
+                    })
+              
+              if combined_new_pairs:
+                append_new_pairs_to_file([combined_new_pairs[-1]])
+                print(f"{datetime.now()}: YENİ COIN TESPİT EDİLDİ!")
+                print(f"API'den: {[p['market'] for p in api_new_pairs]}")
+                print(f"Announcement'dan: {[c['market'] for c in announcement_coins if c['market'] in truly_new_markets]}")
+                
+                # Seen markets'e yeni marketleri ekle
+                seen_markets.update(truly_new_markets)
+                save_seen_markets(seen_markets)
+                print(f"💾 Seen markets güncellendi: {len(seen_markets)} total")
           else:
               # Mevcut marketleri seen_markets'e ekle (ilk çalıştırmada persistence için)
               if current_markets_set:

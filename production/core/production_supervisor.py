@@ -39,27 +39,27 @@ class ProductionSupervisor:
         # Production services configuration
         self.services = {
             "telegram_bot": {
-                "command": ["python3", "production/core/working_telegram_bot.py"],
+                "command": ["python3", "working_telegram_bot.py"],
                 "description": "🤖 Telegram Bot",
                 "max_restarts": 5,
                 "restart_window": 3600,
-                "health_file": "production/monitoring/telegram_bot_health.txt",
+                "health_file": "telegram_bot_health.txt",
                 "critical": True
             },
             "upbit_monitor": {
-                "command": ["python3", "production/core/upbit_announcement_scraper.py"],
+                "command": ["python3", "upbit_announcement_scraper.py"],
                 "description": "👀 Upbit Monitor",
                 "max_restarts": 3,
                 "restart_window": 3600,
-                "health_file": "production/monitoring/upbit_monitor_health.txt",
+                "health_file": "upbit_monitor_health.txt",
                 "critical": True
             },
             "market_tracker": {
-                "command": ["python3", "production/exchanges/PERP/upbit_market_tracker.py"],
+                "command": ["python3", "PERP/upbit_market_tracker.py"],
                 "description": "📊 Market Tracker",
                 "max_restarts": 3,
                 "restart_window": 3600,
-                "health_file": "production/monitoring/market_tracker_health.txt",
+                "health_file": "market_tracker_health.txt",
                 "critical": True
             }
         }
