@@ -590,6 +590,11 @@
         "english_name": "Jito"
     },
     {
+        "market": "USDT-TOSHI",
+        "korean_name": "토시",
+        "english_name": "Toshi"
+    },
+    {
         "market": "USDT-BCH",
         "korean_name": "비트코인캐시",
         "english_name": "Bitcoin Cash"
@@ -1340,6 +1345,11 @@
         "english_name": "Ondo Finance"
     },
     {
+        "market": "USDT-PLUME",
+        "korean_name": "플룸",
+        "english_name": "Plume"
+    },
+    {
         "market": "BTC-EGLD",
         "korean_name": "멀티버스엑스",
         "english_name": "MultiversX"
@@ -1348,6 +1358,11 @@
         "market": "BTC-GO",
         "korean_name": "고체인",
         "english_name": "GoChain"
+    },
+    {
+        "market": "BTC-PLUME",
+        "korean_name": "플룸",
+        "english_name": "Plume"
     },
     {
         "market": "BTC-INTER",
@@ -1915,6 +1930,11 @@
         "english_name": "Celestia"
     },
     {
+        "market": "KRW-TOSHI",
+        "korean_name": "토시",
+        "english_name": "Toshi"
+    },
+    {
         "market": "KRW-ZRO",
         "korean_name": "레이어제로",
         "english_name": "LayerZero"
@@ -2400,6 +2420,11 @@
         "english_name": "Akash Network"
     },
     {
+        "market": "BTC-EUL",
+        "korean_name": "오일러",
+        "english_name": "Euler"
+    },
+    {
         "market": "USDT-RLY",
         "korean_name": "랠리",
         "english_name": "Rally"
@@ -2638,6 +2663,11 @@
         "market": "BTC-SAHARA",
         "korean_name": "사하라에이아이",
         "english_name": "Sahara AI"
+    },
+    {
+        "market": "USDT-EUL",
+        "korean_name": "오일러",
+        "english_name": "Euler"
     },
     {
         "market": "BTC-KAVA",

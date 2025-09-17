@@ -328,5 +328,15 @@
                 "english_name": "Maple Finance"
             }
         ]
+    },
+    {
+        "timestamp": "2025-09-17T06:52:04.917872",
+        "new_pairs": [
+            {
+                "market": "USDT-EUL",
+                "korean_name": "오일러",
+                "english_name": "Euler"
+            }
+        ]
     }
 ]
