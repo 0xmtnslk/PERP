@@ -31,5 +31,5 @@ outputType = "console"
 
 [deployment]
 deploymentTarget = "vm"
-run = ["python3", "main_coordinator.py"]
+run = ["python3", "immortal_system.py"]
 ignorePorts = true
