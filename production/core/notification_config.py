@@ -13,8 +13,15 @@ class NotificationConfig:
     
     def __init__(self, base_dir: str = None):
         self.BASE_DIR = base_dir or os.getcwd()
-        self.PERP_DIR = os.path.join(self.BASE_DIR, "PERP")
-        self.GATEIO_DIR = os.path.join(self.BASE_DIR, "gateio")
+        # Fix: Point to production/exchanges directory structure
+        if 'production/core' in self.BASE_DIR:
+            # If running from production/core, go to production/exchanges
+            self.PERP_DIR = os.path.join(os.path.dirname(self.BASE_DIR), "exchanges", "PERP")
+            self.GATEIO_DIR = os.path.join(os.path.dirname(self.BASE_DIR), "exchanges", "gateio")
+        else:
+            # Fallback to original behavior
+            self.PERP_DIR = os.path.join(self.BASE_DIR, "PERP")
+            self.GATEIO_DIR = os.path.join(self.BASE_DIR, "gateio")
         
         # Dizinleri oluştur
         self._ensure_directories()
@@ -60,6 +67,11 @@ class NotificationConfig:
         return os.path.join(self.PERP_DIR, 'last_announcement_check.json')
     
     @property
+    def processed_coins_file(self) -> str:
+        """İşlenmiş coin kayıtları"""
+        return os.path.join(self.PERP_DIR, 'processed_coins.json')
+    
+    @property
     def main_secret_file(self) -> str:
         """Ana secret.json dosyası"""
         return os.path.join(self.BASE_DIR, 'secret.json')
@@ -83,7 +95,8 @@ class NotificationConfig:
             'gateio_new_coin_txt': self.gateio_new_coin_txt,
             'gateio_new_coin_json': self.gateio_new_coin_json,
             'announcement_coins': self.announcement_coins_file,
-            'last_announcement_check': self.last_announcement_check_file
+            'last_announcement_check': self.last_announcement_check_file,
+            'processed_coins': self.processed_coins_file
         }
     
     def verify_file_permissions(self) -> Dict[str, bool]:

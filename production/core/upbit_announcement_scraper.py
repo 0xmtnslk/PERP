@@ -31,7 +31,7 @@ class UpbitAnnouncementScraper:
         # Centralized notification configuration kullan
         self.announcement_file = notification_config.announcement_coins_file
         self.last_check_file = notification_config.last_announcement_check_file
-        self.processed_coins_file = os.path.join(self.BASE_DIR, "PERP", "processed_coins.json")
+        self.processed_coins_file = notification_config.processed_coins_file
         print(f"🔧 Upbit Scraper using centralized config:")
         print(f"   📁 Announcements: {self.announcement_file}")
         print(f"   📁 Last check: {self.last_check_file}")
@@ -552,6 +552,26 @@ class UpbitAnnouncementScraper:
         print(f"🎯 Final semboller: {unique_symbols}")
         return unique_symbols
     
+    def has_krw_market(self, title):
+        """Başlıkta KRW market desteği olup olmadığını kontrol eder - Case-insensitive"""
+        title_upper = title.upper()
+        krw_indicators = [
+            'KRW',  # Direct KRW mention
+            '원화',  # Korean for KRW
+            'KRW MARKET',
+            'KRW, BTC, USDT',  # Common format
+            'KRW, USDT',
+            '(KRW'
+        ]
+        
+        for indicator in krw_indicators:
+            if indicator.upper() in title_upper:
+                print(f"✅ KRW market indicator found: '{indicator}' in '{title[:100]}...'")
+                return True
+        
+        print(f"❌ No KRW market support in: '{title[:100]}...'")
+        return False
+    
     def is_new_coin_announcement(self, title):
         """Duyurunun yeni coin listeleme duyurusu olup olmadığını kontrol et"""
         title_lower = title.lower()
@@ -614,15 +634,17 @@ class UpbitAnnouncementScraper:
             print(f"⚠️ Son kontrol zamanı kaydetme hatası: {e}")
     
     def load_processed_coins(self):
-        """Daha önce işlenmiş coinleri yükle"""
+        """Daha önce işlenmiş coinleri yükle - Set formatında symbols döndür"""
         try:
             if os.path.exists(self.processed_coins_file):
                 with open(self.processed_coins_file, 'r', encoding='utf-8') as f:
-                    return json.load(f)
-            return []
+                    processed_list = json.load(f)
+                    # Symbol'leri set olarak döndür
+                    return {item['symbol'] for item in processed_list if 'symbol' in item}
+            return set()
         except Exception as e:
             print(f"⚠️ Processed coins yükleme hatası: {e}")
-            return []
+            return set()
     
     def save_processed_coin(self, symbol, title, announcement_data):
         """Yeni işlenmiş coin'i kaydet"""
@@ -701,42 +723,68 @@ class UpbitAnnouncementScraper:
         except Exception as e:
             print(f"❌ Coin kaydetme hatası: {e}")
     
+    
     def process_announcements(self, announcements):
-        """Duyuruları işle ve yeni coinleri tespit et"""
+        """Duyuruları işle ve yeni coinleri tespit et - KRW market + duplicate filtering"""
         new_coins = []
         last_check = self.get_last_check_time()
+        processed_symbols = self.load_processed_coins()
+        
+        print(f"📋 İşlenecek {len(announcements)} duyuru var")
+        print(f"🗂️ Daha önce işlenmiş {len(processed_symbols)} coin: {list(processed_symbols)[:5]}...")
         
         for announcement in announcements:
             try:
-                # Yeni coin duyurusu mu kontrol et
-                if self.is_new_coin_announcement(announcement['title']):
-                    print(f"🔍 Yeni coin duyurusu tespit edildi: {announcement['title']}")
+                title = announcement['title']
+                
+                # 1. ÖNCE KRW MARKET KONTROLÜ
+                if not self.has_krw_market(title):
+                    print(f"⏭️ KRW market yok, pas: {title[:50]}...")
+                    continue
+                
+                # 2. YENİ COİN DUYURUSU KONTROLÜ  
+                if self.is_new_coin_announcement(title):
+                    print(f"🔍 KRW destekli yeni coin duyurusu: {title}")
                     
                     # Coin sembollerini çıkar
-                    symbols = self.extract_coin_symbols(announcement['title'])
+                    symbols = self.extract_coin_symbols(title)
                     
                     if symbols:
-                        coin_data = {
-                            'symbols': symbols,
-                            'title': announcement['title'],
-                            'date': announcement['date'],
-                            'link': announcement['link'],
-                            'detection_time': datetime.now().isoformat()
-                        }
-                        new_coins.append(coin_data)
-                        print(f"🪙 Tespit edilen semboller: {', '.join(symbols)}")
+                        # 3. DUPLICATE KONTROLÜ
+                        new_symbols = [s for s in symbols if s not in processed_symbols]
                         
-                        # En son sembolü PERP formatında kaydet (centralized config kullanarak)
-                        if symbols:
-                            latest_symbol = symbols[-1] + "USDT_UMCBL"
-                            perp_file = notification_config.new_coin_output_txt
-                            try:
-                                with open(perp_file, 'w') as f:
-                                    f.write(latest_symbol)
-                                print(f"📝 PERP formatında kaydedildi (centralized): {latest_symbol}")
-                                print(f"   📁 Path: {perp_file}")
-                            except Exception as e:
-                                print(f"⚠️ PERP dosya yazma hatası: {e}")
+                        if new_symbols:
+                            print(f"🆕 Yeni coin(ler) bulundu: {', '.join(new_symbols)}")
+                            
+                            coin_data = {
+                                'symbols': new_symbols,
+                                'title': title,
+                                'date': announcement['date'],
+                                'link': announcement['link'],
+                                'detection_time': datetime.now().isoformat()
+                            }
+                            new_coins.append(coin_data)
+                            
+                            # PERP formatında kaydet ve processed olarak işaretle
+                            for symbol in new_symbols:
+                                perp_symbol = symbol + "USDT_UMCBL"
+                                
+                                # PERP dosyasına yaz
+                                perp_file = notification_config.new_coin_output_txt
+                                try:
+                                    with open(perp_file, 'w') as f:
+                                        f.write(perp_symbol)
+                                    print(f"📝 PERP: {perp_symbol} → {perp_file}")
+                                    
+                                    # Processed coins'e ekle
+                                    self.save_processed_coin(symbol, title, perp_symbol)
+                                    
+                                except Exception as e:
+                                    print(f"⚠️ PERP dosya yazma hatası: {e}")
+                        else:
+                            print(f"🔄 Tüm coinler daha önce işlenmiş: {', '.join(symbols)}")
+                    else:
+                        print(f"❓ Sembol çıkarılamadı: {title[:50]}...")
                 
             except Exception as e:
                 print(f"⚠️ Duyuru işleme hatası: {e}")
@@ -747,7 +795,7 @@ class UpbitAnnouncementScraper:
         """Sürekli tarama çalıştır - rate limiting ile"""
         print("🔍 Upbit Duyuru Tarayıcısı başlatıldı")
         print(f"📡 Tarama URL'i: {self.announcement_url}")
-        print("⚠️ Rate limiting aktif: 5 dakikada bir kontrol")
+        print("⚠️ Rate limiting aktif: 1 dakikada bir kontrol (KRW market detection)")
         
         # İlk kontrol
         consecutive_errors = 0
