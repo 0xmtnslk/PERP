@@ -61,6 +61,14 @@ class ProductionSupervisor:
                 "restart_window": 3600,
                 "health_file": "production/monitoring/market_tracker_health.txt",
                 "critical": True
+            },
+            "user_trading_engine": {
+                "command": ["python3", "production/core/user_trading_engine.py"],
+                "description": "🚀 Auto-Trading Engine",
+                "max_restarts": 3,
+                "restart_window": 3600,
+                "health_file": "production/monitoring/user_trading_engine_health.txt",
+                "critical": True
             }
         }
         
