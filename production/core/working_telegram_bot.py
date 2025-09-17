@@ -10,7 +10,10 @@ import asyncio
 import re
 import time
 import threading
+import queue
 from datetime import datetime, timedelta
+from contextlib import contextmanager
+from typing import Optional, Dict, Any
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 from telegram.error import BadRequest
@@ -163,6 +166,266 @@ class UserStateTimeoutManager:
 # ✅ GLOBAL TIMEOUT MANAGER INSTANCE
 timeout_manager = UserStateTimeoutManager()
 
+# ✅ PRODUCTION-GRADE: Robust Database Connection Manager
+class DatabaseManager:
+    """
+    Thread-safe database manager with connection pooling, retry logic, and
+    proper concurrency handling to prevent system crashes.
+    """
+    
+    def __init__(self, db_path: str, pool_size: int = 5):
+        self.db_path = db_path
+        self.pool_size = pool_size
+        self._connection_pool = queue.Queue(maxsize=pool_size)
+        self._pool_lock = threading.Lock()
+        self._write_queue = queue.Queue()
+        self._write_worker_running = False
+        self._shutdown = False
+        
+        # Initialize connection pool
+        self._init_connection_pool()
+        
+        # Start write worker thread for serialized writes
+        self._start_write_worker()
+        
+        logger.info(f"✅ DatabaseManager initialized with {pool_size} connections")
+    
+    def _init_connection_pool(self):
+        """Initialize connection pool with optimized SQLite settings"""
+        for _ in range(self.pool_size):
+            conn = self._create_optimized_connection()
+            self._connection_pool.put(conn)
+    
+    def _create_optimized_connection(self) -> sqlite3.Connection:
+        """Create SQLite connection with optimal concurrent access settings"""
+        conn = sqlite3.connect(
+            self.db_path,
+            timeout=30.0,  # 30 second timeout for busy database
+            check_same_thread=False  # Allow cross-thread usage
+        )
+        
+        # ✅ CRITICAL: Optimal SQLite pragmas for concurrency
+        conn.execute('PRAGMA journal_mode=WAL')  # Write-Ahead Logging for concurrent reads
+        conn.execute('PRAGMA synchronous=NORMAL')  # Balance safety and performance
+        conn.execute('PRAGMA wal_autocheckpoint=1000')  # Checkpoint every 1000 pages
+        conn.execute('PRAGMA wal_checkpoint_nowait')  # Non-blocking checkpoints
+        conn.execute('PRAGMA busy_timeout=30000')  # 30 second busy timeout
+        conn.execute('PRAGMA cache_size=-64000')  # 64MB cache
+        conn.execute('PRAGMA temp_store=MEMORY')  # Keep temp tables in memory
+        
+        return conn
+    
+    @contextmanager
+    def get_connection(self):
+        """Get connection from pool with automatic cleanup"""
+        conn = None
+        try:
+            # Get connection from pool with timeout
+            conn = self._connection_pool.get(timeout=10.0)
+            yield conn
+        except queue.Empty:
+            # Pool exhausted - create temporary connection
+            logger.warning("🔶 Connection pool exhausted, creating temporary connection")
+            conn = self._create_optimized_connection()
+            yield conn
+        finally:
+            if conn:
+                try:
+                    # Return to pool if possible
+                    if not self._shutdown and self._connection_pool.qsize() < self.pool_size:
+                        self._connection_pool.put_nowait(conn)
+                    else:
+                        conn.close()
+                except queue.Full:
+                    conn.close()
+                except Exception as e:
+                    logger.error(f"❌ Error returning connection to pool: {e}")
+                    try:
+                        conn.close()
+                    except:
+                        pass
+    
+    def _start_write_worker(self):
+        """Start background thread for serialized database writes"""
+        if not self._write_worker_running:
+            self._write_worker_running = True
+            worker_thread = threading.Thread(target=self._write_worker, daemon=True)
+            worker_thread.start()
+            logger.info("✅ Database write worker started")
+    
+    def _write_worker(self):
+        """Background worker to process write operations serially"""
+        while not self._shutdown:
+            try:
+                # Get write operation with timeout
+                write_op = self._write_queue.get(timeout=1.0)
+                if write_op is None:  # Shutdown signal
+                    break
+                
+                # Execute write operation with retry
+                self._execute_write_with_retry(write_op)
+                self._write_queue.task_done()
+                
+            except queue.Empty:
+                continue
+            except Exception as e:
+                logger.error(f"❌ Write worker error: {e}")
+    
+    def _execute_write_with_retry(self, write_op: Dict[str, Any]):
+        """Execute write operation with exponential backoff retry"""
+        operation = write_op['operation']
+        params = write_op['params']
+        callback = write_op.get('callback')
+        max_retries = 5
+        base_delay = 0.1  # 100ms base delay
+        
+        for attempt in range(max_retries):
+            try:
+                with self.get_connection() as conn:
+                    cursor = conn.cursor()
+                    
+                    if operation == 'update_setting':
+                        self._do_update_setting(cursor, conn, **params)
+                    elif operation == 'save_user':
+                        self._do_save_user(cursor, conn, **params)
+                    else:
+                        logger.error(f"❌ Unknown write operation: {operation}")
+                        return
+                    
+                    # Success - notify callback if provided
+                    if callback:
+                        callback(success=True)
+                    return
+                    
+            except sqlite3.OperationalError as e:
+                if "database is locked" in str(e).lower() or "busy" in str(e).lower():
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)  # Exponential backoff
+                        logger.warning(f"⚠️ Database busy (attempt {attempt + 1}/{max_retries}), retrying in {delay:.2f}s")
+                        time.sleep(delay)
+                        continue
+                
+                logger.error(f"❌ Database operation failed after {max_retries} attempts: {e}")
+                if callback:
+                    callback(success=False, error=str(e))
+                return
+                
+            except Exception as e:
+                logger.error(f"❌ Unexpected database error: {e}")
+                if callback:
+                    callback(success=False, error=str(e))
+                return
+    
+    def _do_update_setting(self, cursor: sqlite3.Cursor, conn: sqlite3.Connection, 
+                          user_id: int, key: str, value: Any):
+        """Execute update setting operation"""
+        # Validate column name to prevent SQL injection
+        allowed_columns = ['api_key', 'secret_key', 'passphrase', 'amount_usdt', 
+                          'leverage', 'take_profit_percent', 'active']
+        if key not in allowed_columns:
+            raise ValueError(f"Invalid column name: {key}")
+        
+        cursor.execute(f'UPDATE user_settings SET {key} = ? WHERE user_id = ?', 
+                      (value, user_id))
+        conn.commit()
+        logger.info(f"✅ Updated {key} for user {user_id}")
+    
+    def _do_save_user(self, cursor: sqlite3.Cursor, conn: sqlite3.Connection, 
+                     user_id: int, username: str):
+        """Execute save user operation"""
+        cursor.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', 
+                      (user_id, username))
+        cursor.execute('INSERT OR IGNORE INTO user_settings (user_id) VALUES (?)', 
+                      (user_id,))
+        conn.commit()
+        logger.info(f"✅ Saved user {user_id}")
+    
+    def get_user_settings(self, user_id: int) -> Optional[Dict[str, Any]]:
+        """Get user settings with retry logic"""
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                with self.get_connection() as conn:
+                    cursor = conn.cursor()
+                    cursor.execute('''
+                        SELECT api_key, secret_key, passphrase, amount_usdt, leverage, take_profit_percent, active
+                        FROM user_settings WHERE user_id = ?
+                    ''', (user_id,))
+                    result = cursor.fetchone()
+                    
+                    if result:
+                        return {
+                            'api_key': result[0] or '',
+                            'secret_key': result[1] or '',
+                            'passphrase': result[2] or '',
+                            'amount': result[3],
+                            'leverage': result[4],
+                            'take_profit': result[5],
+                            'active': bool(result[6])
+                        }
+                    return None
+                    
+            except sqlite3.OperationalError as e:
+                if "database is locked" in str(e).lower() and attempt < max_retries - 1:
+                    time.sleep(0.1 * (attempt + 1))  # Progressive delay
+                    continue
+                logger.error(f"❌ Database read error: {e}")
+                return None
+            except Exception as e:
+                logger.error(f"❌ Unexpected read error: {e}")
+                return None
+        
+        logger.error(f"❌ Failed to get user settings for {user_id} after {max_retries} attempts")
+        return None
+    
+    def update_setting_async(self, user_id: int, key: str, value: Any, callback=None):
+        """Queue async update operation"""
+        write_op = {
+            'operation': 'update_setting',
+            'params': {'user_id': user_id, 'key': key, 'value': value},
+            'callback': callback
+        }
+        
+        try:
+            self._write_queue.put_nowait(write_op)
+            logger.info(f"✅ Queued update {key} for user {user_id}")
+        except queue.Full:
+            logger.error(f"❌ Write queue full, dropping update for user {user_id}")
+            if callback:
+                callback(success=False, error="Write queue full")
+    
+    def save_user_async(self, user_id: int, username: str, callback=None):
+        """Queue async save user operation"""
+        write_op = {
+            'operation': 'save_user',
+            'params': {'user_id': user_id, 'username': username},
+            'callback': callback
+        }
+        
+        try:
+            self._write_queue.put_nowait(write_op)
+            logger.info(f"✅ Queued save user {user_id}")
+        except queue.Full:
+            logger.error(f"❌ Write queue full, dropping save for user {user_id}")
+            if callback:
+                callback(success=False, error="Write queue full")
+    
+    def shutdown(self):
+        """Shutdown database manager gracefully"""
+        logger.info("🔄 Shutting down DatabaseManager...")
+        self._shutdown = True
+        self._write_queue.put(None)  # Signal shutdown
+        
+        # Close all pooled connections
+        while not self._connection_pool.empty():
+            try:
+                conn = self._connection_pool.get_nowait()
+                conn.close()
+            except:
+                pass
+        
+        logger.info("✅ DatabaseManager shutdown complete")
+
 # ✅ PRODUCTION-GRADE: Safe async task wrapper
 async def safe_create_task(coro, task_name: str = "unknown"):
     """
@@ -232,117 +495,71 @@ BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
 class WorkingTelegramBot:
     def __init__(self):
         self.db_path = 'trading_bot.db'
-        # ✅ PRODUCTION-GRADE: Thread-safe database operations
-        self._db_lock = threading.RLock()  # Reentrant lock for nested operations
+        # ✅ PRODUCTION-GRADE: Robust database manager with connection pooling
         self.init_database()
+        self.db_manager = DatabaseManager(self.db_path, pool_size=10)
     
     def init_database(self):
-        """Database initialize et"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY,
-                username TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_settings (
-                user_id INTEGER PRIMARY KEY,
-                api_key TEXT,
-                secret_key TEXT,
-                passphrase TEXT,
-                amount_usdt REAL DEFAULT 20.0,
-                leverage INTEGER DEFAULT 10,
-                take_profit_percent REAL DEFAULT 100.0,
-                active INTEGER DEFAULT 1,
-                FOREIGN KEY (user_id) REFERENCES users (user_id)
-            )
-        ''')
-        
-        conn.commit()
-        conn.close()
-        logger.info("✅ Database initialized")
+        """Database initialize et - Thread-safe initialization"""
+        # Use simple connection for initial setup only
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        try:
+            # Enable WAL mode early
+            conn.execute('PRAGMA journal_mode=WAL')
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    user_id INTEGER PRIMARY KEY,
+                    username TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS user_settings (
+                    user_id INTEGER PRIMARY KEY,
+                    api_key TEXT,
+                    secret_key TEXT,
+                    passphrase TEXT,
+                    amount_usdt REAL DEFAULT 20.0,
+                    leverage INTEGER DEFAULT 10,
+                    take_profit_percent REAL DEFAULT 100.0,
+                    active INTEGER DEFAULT 1,
+                    FOREIGN KEY (user_id) REFERENCES users (user_id)
+                )
+            ''')
+            
+            conn.commit()
+            logger.info("✅ Database initialized with WAL mode")
+        finally:
+            conn.close()
     
     def save_user(self, user_id, username):
-        """Kullanıcı kaydet - Thread-safe"""
-        with self._db_lock:
-            try:
-                conn = sqlite3.connect(self.db_path, timeout=10.0)  # 10 second timeout
-                conn.execute('PRAGMA journal_mode=WAL')  # Better concurrency
-                cursor = conn.cursor()
-                cursor.execute('INSERT OR IGNORE INTO users (user_id, username) VALUES (?, ?)', 
-                              (user_id, username))
-                cursor.execute('INSERT OR IGNORE INTO user_settings (user_id) VALUES (?)', 
-                              (user_id,))
-                conn.commit()
-            except sqlite3.Error as e:
-                logger.error(f"❌ Database save_user error: {e}")
-                raise
-            finally:
-                if conn:
-                    conn.close()
+        """Kullanıcı kaydet - Async queue-based for concurrency safety"""
+        # Use callback to handle completion
+        def on_save_complete(success, error=None):
+            if not success:
+                logger.error(f"❌ Failed to save user {user_id}: {error}")
+            else:
+                logger.info(f"✅ User {user_id} saved successfully")
+        
+        self.db_manager.save_user_async(user_id, username, callback=on_save_complete)
     
     def get_user_settings(self, user_id):
-        """Kullanıcı ayarlarını getir - Thread-safe"""
-        with self._db_lock:
-            try:
-                conn = sqlite3.connect(self.db_path, timeout=10.0)
-                conn.execute('PRAGMA journal_mode=WAL')
-                cursor = conn.cursor()
-                cursor.execute('''
-                    SELECT api_key, secret_key, passphrase, amount_usdt, leverage, take_profit_percent, active
-                    FROM user_settings WHERE user_id = ?
-                ''', (user_id,))
-                result = cursor.fetchone()
-                
-                if result:
-                    return {
-                        'api_key': result[0] or '',
-                        'secret_key': result[1] or '',
-                        'passphrase': result[2] or '',
-                        'amount': result[3],
-                        'leverage': result[4],
-                        'take_profit': result[5],
-                        'active': bool(result[6])
-                    }
-                return None
-            except sqlite3.Error as e:
-                logger.error(f"❌ Database get_user_settings error: {e}")
-                return None  # Return safe default instead of crashing
-            finally:
-                if conn:
-                    conn.close()
+        """Kullanıcı ayarlarını getir - Robust with retry logic"""
+        return self.db_manager.get_user_settings(user_id)
     
     def update_setting(self, user_id, key, value):
-        """Tek ayar güncelle - Thread-safe"""
-        with self._db_lock:
-            try:
-                # ✅ SQL injection protection - validate column name
-                allowed_columns = ['api_key', 'secret_key', 'passphrase', 'amount_usdt', 
-                                 'leverage', 'take_profit_percent', 'active']
-                if key not in allowed_columns:
-                    raise ValueError(f"Invalid column name: {key}")
-                
-                conn = sqlite3.connect(self.db_path, timeout=10.0)
-                conn.execute('PRAGMA journal_mode=WAL')
-                cursor = conn.cursor()
-                cursor.execute(f'UPDATE user_settings SET {key} = ? WHERE user_id = ?', 
-                              (value, user_id))
-                conn.commit()
-                logger.info(f"✅ Updated {key} for user {user_id}")
-            except sqlite3.Error as e:
-                logger.error(f"❌ Database update_setting error for {key}: {e}")
-                raise
-            except ValueError as e:
-                logger.error(f"❌ Invalid update_setting parameter: {e}")
-                raise
-            finally:
-                if conn:
-                    conn.close()
+        """Tek ayar güncelle - Async queue-based for concurrency safety"""
+        # Use callback to handle completion
+        def on_update_complete(success, error=None):
+            if not success:
+                logger.error(f"❌ Failed to update {key} for user {user_id}: {error}")
+            else:
+                logger.info(f"✅ Updated {key} for user {user_id} successfully")
+        
+        self.db_manager.update_setting_async(user_id, key, value, callback=on_update_complete)
 
 # Bot instance
 bot = WorkingTelegramBot()
