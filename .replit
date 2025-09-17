@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Crash-Proof Auto-Trading System"
+args = "Immortal Trading System"
 
 [[workflows.workflow]]
-name = "Crash-Proof Auto-Trading System"
+name = "Immortal Trading System"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 launcher.py"
+args = "python3 immortal_system.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
