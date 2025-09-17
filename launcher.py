@@ -47,19 +47,29 @@ class LauncherWatchdog:
         sys.exit(0)
     
     def stop_supervisor(self):
-        """Stop supervisor process gracefully"""
+        """Stop supervisor process and its children gracefully"""
         if self.supervisor_process:
             try:
                 logger.info("🛑 Stopping supervisor process...")
-                self.supervisor_process.terminate()
+                
+                # First try graceful termination of process group
+                try:
+                    os.killpg(os.getpgid(self.supervisor_process.pid), signal.SIGTERM)
+                except ProcessLookupError:
+                    # Process already dead
+                    logger.info("✅ Supervisor already stopped")
+                    return
                 
                 # Wait up to 10 seconds for graceful shutdown
                 try:
                     self.supervisor_process.wait(timeout=10)
                     logger.info("✅ Supervisor stopped gracefully")
                 except subprocess.TimeoutExpired:
-                    logger.warning("⏰ Supervisor didn't stop gracefully, force killing...")
-                    self.supervisor_process.kill()
+                    logger.warning("⏰ Supervisor didn't stop gracefully, force killing process group...")
+                    try:
+                        os.killpg(os.getpgid(self.supervisor_process.pid), signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
                     self.supervisor_process.wait()
                     logger.info("✅ Supervisor force stopped")
                     
@@ -88,12 +98,13 @@ class LauncherWatchdog:
         try:
             logger.info("🚀 Starting production supervisor...")
             
+            # Open log file for supervisor output
+            log_file = open('production_supervisor_output.log', 'a', buffering=1)
+            
             self.supervisor_process = subprocess.Popen(
                 ["python3", "production_supervisor.py"],
-                stdout=subprocess.PIPE,
+                stdout=log_file,
                 stderr=subprocess.STDOUT,
-                bufsize=1,
-                universal_newlines=True,
                 preexec_fn=os.setsid  # Create process group for clean kills
             )
             
