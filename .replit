@@ -16,18 +16,18 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Production Supervisor"
+args = "Crash-Proof Auto-Trading System"
 
 [[workflows.workflow]]
-name = "Production Supervisor"
+name = "Crash-Proof Auto-Trading System"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 production_supervisor.py"
+args = "python3 launcher.py"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [deployment]
 deploymentTarget = "vm"

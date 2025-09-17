@@ -143,15 +143,19 @@ class LauncherWatchdog:
                         logger.error("❌ Failed to start supervisor, retrying in 30s...")
                         time.sleep(30)
                         continue
+                    
+                    # Give supervisor 60 seconds to initialize before checking heartbeat
+                    logger.info("⏳ Giving supervisor 60s to initialize...")
+                    time.sleep(60)
                 
-                # Check supervisor health via heartbeat
+                # Check supervisor health via heartbeat (only after initialization)
                 if not self.is_supervisor_healthy():
                     logger.warning("💔 Supervisor heartbeat stale, restarting...")
                     self.stop_supervisor()
                     continue
                 
-                # All good, sleep and check again
-                time.sleep(30)
+                # All good, sleep and check again  
+                time.sleep(60)  # Check less frequently
                 
             except Exception as e:
                 logger.error(f"❌ Launcher error: {e}")
