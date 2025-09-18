@@ -870,7 +870,7 @@ class StableCryptoBot:
             try:
                 logger.info("🤖 Starting Telegram bot polling...")
                 if self.telegram_bot:
-                await self.telegram_bot.dp.start_polling(self.telegram_bot.bot)
+                    await self.telegram_bot.dp.start_polling(self.telegram_bot.bot)
             except Exception as e:
                 logger.error(f"❌ Telegram bot error: {e}")
                 if self.running:
