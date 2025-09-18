@@ -462,6 +462,7 @@ class TelegramBot:
         self.dp.message.register(self.setup_command, Command("setup"))
         self.dp.message.register(self.settings_command, Command("settings"))
         self.dp.message.register(self.handle_api_setup, F.text.startswith("API:"))
+        self.dp.message.register(self.handle_settings_update, F.text.startswith("SET:"))
         self.dp.callback_query.register(self.close_position_callback, F.data.startswith("close_"))
     
     async def start_command(self, message: Message):
@@ -483,9 +484,10 @@ class TelegramBot:
             
             # Initialize default settings
             await db.execute("""
-                INSERT OR IGNORE INTO user_settings (user_id, auto_trading)
-                VALUES (?, ?)
-            """, (user_id, True))
+                INSERT OR IGNORE INTO user_settings 
+                (user_id, leverage, trade_amount, take_profit_percent, auto_trading)
+                VALUES (?, ?, ?, ?, ?)
+            """, (user_id, 125, 50.0, 10.0, True))
             
             await db.commit()
         
@@ -608,14 +610,41 @@ class TelegramBot:
     
     async def settings_command(self, message: Message):
         """Handle /settings command"""
-        await message.reply(
-            "⚙️ **Settings Menu**\n\n"
-            "Current settings management will be added soon.\n"
-            "For now, default settings are used:\n\n"
-            "📊 Leverage: 125x\n"
-            "💰 Trade Amount: $50\n"
-            "🎯 Take Profit: 10%"
-        )
+        if not message.from_user:
+            return
+            
+        user_id = message.from_user.id
+        
+        # Get current settings
+        async with aiosqlite.connect(self.db_manager.db_path) as db:
+            cursor = await db.execute("""
+                SELECT leverage, trade_amount, take_profit_percent, auto_trading
+                FROM user_settings WHERE user_id = ?
+            """, (user_id,))
+            settings = await cursor.fetchone()
+        
+        if settings:
+            leverage, amount, profit, auto_trading = settings
+            await message.reply(
+                f"⚙️ **Current Settings**\n\n"
+                f"📊 Leverage: {leverage}x\n"
+                f"💰 Trade Amount: ${amount}\n"
+                f"🎯 Take Profit: {profit}%\n"
+                f"🤖 Auto-trading: {'✅ Active' if auto_trading else '❌ Disabled'}\n\n"
+                f"**To Update Settings:**\n"
+                f"`SET:LEVERAGE:125` (10x-125x)\n"
+                f"`SET:AMOUNT:100` ($10-$1000)\n"
+                f"`SET:PROFIT:15` (5%-50%)\n\n"
+                f"**Example:**\n"
+                f"`SET:LEVERAGE:50`\n"
+                f"`SET:AMOUNT:200`\n"
+                f"`SET:PROFIT:20`"
+            )
+        else:
+            await message.reply(
+                "❌ **Settings not found**\n\n"
+                "Please use /start first to initialize your account."
+            )
     
     async def close_position_callback(self, callback: CallbackQuery):
         """Handle position close requests"""
@@ -629,6 +658,118 @@ class TelegramBot:
         await callback.answer("🔄 Position close feature coming soon!")
         
         logger.info(f"📝 Close position request: User {user_id}, Task {task_id}")
+    
+    async def handle_settings_update(self, message: Message):
+        """Handle settings update commands"""
+        if not message.from_user or not message.text:
+            return
+            
+        user_id = message.from_user.id
+        
+        try:
+            # Parse SET:TYPE:VALUE format
+            parts = message.text.strip().split(':')
+            if len(parts) != 3 or parts[0] != 'SET':
+                raise ValueError("Invalid format")
+            
+            _, setting_type, value_str = parts
+            setting_type = setting_type.upper()
+            
+            # Validate and convert value
+            if setting_type == 'LEVERAGE':
+                value = int(value_str)
+                if not (10 <= value <= 125):
+                    raise ValueError("Leverage must be between 10x-125x")
+                
+                async with aiosqlite.connect(self.db_manager.db_path) as db:
+                    await db.execute("""
+                        INSERT OR REPLACE INTO user_settings 
+                        (user_id, leverage, trade_amount, take_profit_percent, auto_trading)
+                        VALUES (?, ?, 
+                                COALESCE((SELECT trade_amount FROM user_settings WHERE user_id = ?), 50.0),
+                                COALESCE((SELECT take_profit_percent FROM user_settings WHERE user_id = ?), 10.0),
+                                COALESCE((SELECT auto_trading FROM user_settings WHERE user_id = ?), 1))
+                    """, (user_id, value, user_id, user_id, user_id))
+                    await db.commit()
+                
+                await message.reply(
+                    f"✅ **Leverage Updated!**\n\n"
+                    f"📊 New leverage: {value}x\n\n"
+                    f"Your next trades will use {value}x leverage."
+                )
+                
+            elif setting_type == 'AMOUNT':
+                value = float(value_str)
+                if not (10 <= value <= 1000):
+                    raise ValueError("Trade amount must be between $10-$1000")
+                
+                async with aiosqlite.connect(self.db_manager.db_path) as db:
+                    await db.execute("""
+                        INSERT OR REPLACE INTO user_settings 
+                        (user_id, leverage, trade_amount, take_profit_percent, auto_trading)
+                        VALUES (?, 
+                                COALESCE((SELECT leverage FROM user_settings WHERE user_id = ?), 125),
+                                ?, 
+                                COALESCE((SELECT take_profit_percent FROM user_settings WHERE user_id = ?), 10.0),
+                                COALESCE((SELECT auto_trading FROM user_settings WHERE user_id = ?), 1))
+                    """, (user_id, user_id, value, user_id, user_id))
+                    await db.commit()
+                
+                await message.reply(
+                    f"✅ **Trade Amount Updated!**\n\n"
+                    f"💰 New amount: ${value}\n\n"
+                    f"Your next trades will use ${value} per position."
+                )
+                
+            elif setting_type == 'PROFIT':
+                value = float(value_str)
+                if not (5 <= value <= 50):
+                    raise ValueError("Take profit must be between 5%-50%")
+                
+                async with aiosqlite.connect(self.db_manager.db_path) as db:
+                    await db.execute("""
+                        INSERT OR REPLACE INTO user_settings 
+                        (user_id, leverage, trade_amount, take_profit_percent, auto_trading)
+                        VALUES (?, 
+                                COALESCE((SELECT leverage FROM user_settings WHERE user_id = ?), 125),
+                                COALESCE((SELECT trade_amount FROM user_settings WHERE user_id = ?), 50.0),
+                                ?, 
+                                COALESCE((SELECT auto_trading FROM user_settings WHERE user_id = ?), 1))
+                    """, (user_id, user_id, user_id, value, user_id))
+                    await db.commit()
+                
+                await message.reply(
+                    f"✅ **Take Profit Updated!**\n\n"
+                    f"🎯 New take profit: {value}%\n\n"
+                    f"Positions will automatically close at {value}% profit."
+                )
+                
+            else:
+                raise ValueError(f"Unknown setting type: {setting_type}")
+            
+            # Delete the command message for cleaner chat
+            try:
+                await message.delete()
+            except:
+                pass
+                
+            logger.info(f"⚙️ User {user_id} updated {setting_type} to {value}")
+            
+        except ValueError as e:
+            await message.reply(
+                f"❌ **Invalid setting!**\n\n"
+                f"Error: {str(e)}\n\n"
+                f"**Valid formats:**\n"
+                f"`SET:LEVERAGE:50` (10-125)\n"
+                f"`SET:AMOUNT:200` (10-1000)\n"
+                f"`SET:PROFIT:15` (5-50)"
+            )
+        except Exception as e:
+            await message.reply(
+                f"❌ **Settings update failed!**\n\n"
+                f"Please try again or contact support."
+            )
+            logger.error(f"❌ Settings update error for user {user_id}: {e}")
     
     async def notify_new_listing(self, user_id: int, listing_data: dict):
         """Notify user about new listing"""
