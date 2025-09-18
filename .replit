@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["cargo", "chromedriver", "chromium", "geckodriver", "libiconv", "libxcrypt", "openssl", "pkg-config", "rustc"]
+packages = ["cargo", "chromedriver", "chromium", "geckodriver", "libiconv", "libxcrypt", "openssl", "pkg-config", "redis", "rustc"]
 
 [workflows]
 runButton = "Project"
