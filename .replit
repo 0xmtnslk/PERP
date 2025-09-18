@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Immortal Trading System"
+args = "Stable Crypto Bot"
 
 [[workflows.workflow]]
-name = "Immortal Trading System"
+name = "Stable Crypto Bot"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 immortal_system.py"
+args = "python3 stable_crypto_bot.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
